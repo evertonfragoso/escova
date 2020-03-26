@@ -25,20 +25,6 @@ for (let i = 0; i < startTableSize; i++) {
   table.push(deck.pop())
 }
 
-// helper
-function renderCard (card) {
-  let cardItem = document.createElement('li')
-  let cardText = document.createElement('span')
-
-  cardText.classList.add('a11y')
-  cardText.innerText = card.Value + ' of ' + card.Suit
-
-  cardItem.appendChild(cardText)
-  cardItem.classList.add('card', card.Suit, 'val' + card.Value)
-
-  return cardItem
-}
-
 // render
 
 const gameContainer = document.getElementById('game')
@@ -52,7 +38,6 @@ for (let i = 0; i < players.length; i++) {
   let h = document.createElement('ul')
 
   for (let c = 0; c < players[i].hand.length; c++) {
-    // let card = renderCard(players[i].hand[c])
     let card = players[i].hand[c].render()
     h.appendChild(card)
   }
@@ -71,7 +56,7 @@ tableCards.append(document.createElement('ul'))
 gameContainer.appendChild(tableCards)
 
 for (let i = 0; i < table.length; i++) {
-  let card = renderCard(deck[i])
+  let card = deck[i].render()
   tableCards.querySelector('ul').appendChild(card)
 }
 
@@ -83,6 +68,6 @@ pile.append(document.createElement('ul'))
 gameContainer.appendChild(pile)
 
 for (let i = 0; i < deck.length; i++) {
-  let card = renderCard(deck[i])
+  let card = deck[i].render()
   pile.querySelector('ul').appendChild(card)
 }
