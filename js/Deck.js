@@ -1,5 +1,7 @@
+import Card from './Card.js'
+
 export default class Deck {
-  constructor () {
+  constructor (shuffle = true) {
     const suits = ['clubs', 'diamonds', 'hearts', 'spades']
     // const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
     // escova style
@@ -9,14 +11,11 @@ export default class Deck {
 
     suits.forEach(suit => {
       values.forEach(val => {
-        let card = { Value: val, Suit: suit }
-        this.deck.push(card)
+        this.deck.push(new Card(val, suit))
       })
     })
 
-    this.shuffle()
-
-    return this.deck
+    if (shuffle) this.shuffle()
   }
 
   shuffle () {
@@ -27,6 +26,15 @@ export default class Deck {
 
       this.deck[location1] = this.deck[location2]
       this.deck[location2] = tmp
+    }
+  }
+
+  deal (players, handSize) {
+    for (let p in players) {
+      for (let c = 0; c < handSize; c++) {
+        let card = this.deck.pop()
+        players[p].hand.push(card)
+      }
     }
   }
 }

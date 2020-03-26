@@ -1,0 +1,80 @@
+:root {
+  --card_height: 315px;
+  --card_width: 225px;
+}
+
+.card {
+  background-image: url(/images/cards_sheet.png);
+  cursor: pointer;
+  display: inline-block;
+  height: var(--card_height);
+  width: var(--card_width);
+}
+
+.hearts {
+  background-position-y: 0;
+}
+
+.clubs {
+  background-position-y: calc(var(--card_height) * -3);
+}
+
+.diamonds {
+  background-position-y: calc(var(--card_height) * -2);
+}
+
+.spades {
+  background-position-y: calc(var(--card_height) * -1);
+}
+
+.valA {
+  background-position-x: 0;
+}
+
+.val2 {
+  background-position-x: calc(var(--card_width) * -1);
+}
+
+.val3 {
+  background-position-x: calc(var(--card_width) * -2);
+}
+
+.val4 {
+  background-position-x: calc(var(--card_width) * -3);
+}
+
+.val5 {
+  background-position-x: calc(var(--card_width) * -4);
+}
+
+.val6 {
+  background-position-x: calc(var(--card_width) * -5);
+}
+
+.val7 {
+  background-position-x: calc(var(--card_width) * -6);
+}
+
+.val8 {
+  background-position-x: calc(var(--card_width) * -7);
+}
+
+.val9 {
+  background-position-x: calc(var(--card_width) * -8);
+}
+
+.val10 {
+  background-position-x: calc(var(--card_width) * -9);
+}
+
+.valJ {
+  background-position-x: calc(var(--card_width) * -10);
+}
+
+.valQ {
+  background-position-x: calc(var(--card_width) * -11);
+}
+
+.valK {
+  background-position-x: calc(var(--card_width) * -12);
+}
