@@ -1,73 +1,38 @@
 import Deck from './Deck.js'
 import Player from './Player.js'
+import GameContainer from './GameContainer.js'
 
-const totalPlayers = 4
-const handSize = 3
-const startTableSize = 4
+export default class Game {
+  constructor (totalPlayers, handSize, startTableSize, containerSelector) {
+    this.newDeck
+    this.deck
+    this.players
+    this.table
 
-const newDeck = new Deck()
-const deck = newDeck.deck
+    this.totalPlayers = totalPlayers
+    this.handSize = handSize
+    this.startTableSize = startTableSize
 
-const players = new Array()
-const table = new Array()
-
-// players hands
-
-for (let p = 0; p < totalPlayers; p++) {
-  players[p] = new Player()
-}
-
-newDeck.deal(players, handSize)
-
-// table
-
-for (let i = 0; i < startTableSize; i++) {
-  table.push(deck.pop())
-}
-
-// render
-
-const gameContainer = document.getElementById('game')
-
-gameContainer.innerHTML = ''
-
-// render hands
-
-for (let i = 0; i < players.length; i++) {
-  let p = document.createElement('p')
-  let h = document.createElement('ul')
-
-  for (let c = 0; c < players[i].hand.length; c++) {
-    let card = players[i].hand[c].render()
-    h.appendChild(card)
+    this.gameContainer = new GameContainer(containerSelector)
   }
 
-  p.innerText = 'Player ' + i
-  p.appendChild(h)
+  startGame () {
+    this.newDeck = new Deck()
+    this.deck = this.newDeck.deck
 
-  gameContainer.appendChild(p)
-}
+    this.players = new Array()
+    this.table = new Array()
 
-// render table cards
+    for (let p = 0; p < this.totalPlayers; p++) {
+      this.players[p] = new Player()
+    }
 
-let tableCards = document.createElement('div')
-tableCards.innerText = 'Table Cards:'
-tableCards.append(document.createElement('ul'))
-gameContainer.appendChild(tableCards)
+    this.newDeck.deal(this.players, this.handSize)
 
-for (let i = 0; i < table.length; i++) {
-  let card = deck[i].render()
-  tableCards.querySelector('ul').appendChild(card)
-}
+    this.gameContainer.resetScreen()
 
-// render pile
-
-let pile = document.createElement('div')
-pile.innerText = 'Cards pile:'
-pile.append(document.createElement('ul'))
-gameContainer.appendChild(pile)
-
-for (let i = 0; i < deck.length; i++) {
-  let card = deck[i].render()
-  pile.querySelector('ul').appendChild(card)
+    this.gameContainer.renderPlayersHands(this.players)
+    this.gameContainer.renderTableCards(this.startTableSize, this.deck)
+    this.gameContainer.renderCardsPile(this.deck)
+  }
 }
