@@ -5,5 +5,8 @@ const handSize = 3
 const startTableSize = 4
 const containerSelector = '#game'
 
-var game = new Game(totalPlayers, handSize, startTableSize, containerSelector)
-game.startGame()
+const socket = window.Game.socket
+
+socket.on('start game', game => {
+  game.startGame()
+})

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Escova</title>
+    <link rel="stylesheet" href="/css/normalize.css">
+    <link rel="stylesheet" href="/css/main.css">
+  </head>
+
+  <body>
+    <div id="lobby">
+      <form action="">
+        <label for="player">Seu nome</label>
+        <input id="player" autocomplete="off" />
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+
+    <div id="game"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/js/lobby.js"></script>
+    <!-- <script type="module" src="/js/game/main.js"></script> -->
+  </body>
+</html>
