@@ -7,10 +7,20 @@ export default class GameContainer {
     container.innerHTML = ''
   }
 
+  renderHand (player) {
+    let hand = document.createElement('div')
+    hand.setAttribute('data-player-id', player.playerId)
+    hand.innerText = player.name
+
+    this._cardList(hand, player.hand)
+    this._append(hand)
+  }
+
   renderPlayersHands (players) {
     for (let i in players) {
       let hand = document.createElement('div')
-      hand.innerText = 'Player ' + i
+      hand.setAttribute('data-player-id', players[i].playerId)
+      hand.innerText = players[i].name
 
       this._cardList(hand, players[i].hand)
       this._append(hand)
