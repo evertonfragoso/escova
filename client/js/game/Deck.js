@@ -31,6 +31,7 @@ export default class Deck {
 
   deal (players, handSize) {
     for (let p in players) {
+      players[p].hand = new Array()
       for (let c = 0; c < handSize; c++) {
         let card = this.deck.pop()
         players[p].hand.push(card)

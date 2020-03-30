@@ -8,20 +8,42 @@
   </head>
 
   <body>
-    <div id="lobby">
-      <ul id="player_list"></ul>
+    <main>
+      <header>
+        <h1>Escova online</h1>
+      </header>
 
-      <form action="">
-        <label for="player">Seu nome</label>
-        <input id="player" autocomplete="off" />
-        <button type="submit">Entrar</button>
-      </form>
-    </div>
+      <section id="rooms">
+        <header>
+          <h2>Salas</h2>
+        </header>
 
-    <div id="game"></div>
+        <ul id="room_list"></ul>
+
+        <form action="">
+          <button type="submit" name="qtd" value="2">Nova Sala (2 jogadores)</button>
+          <button type="submit" name="qtd" value="4">Nova Sala (4 jogadores)</button>
+        </form>
+      </section>
+
+      <section id="lobby" hidden>
+        <header>
+          <h2>Jogadores:</h2>
+        </header>
+
+        <ul id="player_list"></ul>
+
+        <form action="">
+          <label for="player">Seu nome</label>
+          <input type="text" id="player" autocomplete="off" />
+          <button type="submit">Entrar</button>
+        </form>
+      </section>
+
+      <section id="game"></section>
+    </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="/js/lobby.js"></script>
-    <!-- <script type="module" src="/js/game/main.js"></script> -->
   </body>
 </html>
