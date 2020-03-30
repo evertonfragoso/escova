@@ -101,7 +101,12 @@ io.on('connection', socket => {
       if (index > -1) { game.players.splice(index, 1) }
     } else console.log('a user has disconnected')
 
-    socket.emit('lobby:update', game.players) // not working
+    if (game)
+      if (game.players.length > 0)
+        socket.broadcast.emit('lobby:update', game.players) // not working
+      else
+        game = null
+
     updateRoomList()
   })
 })
