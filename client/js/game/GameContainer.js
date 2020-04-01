@@ -71,10 +71,10 @@ export default class GameContainer {
     let cardText = document.createElement('span')
 
     cardText.classList.add('a11y')
-    cardText.innerText = card.Value + ' of ' + card.Suit
+    cardText.innerText = card.DisplayValue + ' of ' + card.Suit
 
     cardItem.appendChild(cardText)
-    cardItem.classList.add('card', card.Suit, 'val' + card.Value)
+    cardItem.classList.add('card', card.Suit, 'val' + card.DisplayValue)
 
     return cardItem
   }

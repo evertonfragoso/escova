@@ -154,6 +154,7 @@ socket.on('reconnect_error', () => {
 
 function showLobby () {
   lobby.removeAttribute('hidden')
+  lobbyInput.focus()
 }
 
 function hideLobby () {

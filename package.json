@@ -4,7 +4,8 @@
   "description": "Jogo de escova (escopa ou escoba) feito em JS",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js --exec babel-node --presets babel-preset-env",
+    "start": "npx babel-node index.js --exec babel-node --presets babel-preset-env",
+    "nodemon": "nodemon index.js --exec babel-node --presets babel-preset-env",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "git@github.com:evertonfragoso/escova.git",
@@ -16,8 +17,10 @@
     "babel-loader": "^8.1.0",
     "babel-preset-env": "^1.7.0",
     "express": "^4.17.1",
-    "nodemon": "^2.0.2",
     "path": "^0.12.7",
     "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
   }
 }
