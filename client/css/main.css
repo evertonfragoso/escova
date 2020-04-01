@@ -1,14 +1,56 @@
 :root {
   --card_height: 315px;
   --card_width: 225px;
+  --card_border_radius: 1rem;
+  --game_font_color: #fff;
+  --spacing: 1rem;
+}
+
+main {
+  margin: 0 auto;
+  max-width: 60rem;
+}
+
+main > header {
+}
+
+#rooms {
+  padding: var(--spacing) 0;
+}
+
+#lobby {
+  padding: var(--spacing) 0;
+}
+
+#game {
+  background: url('https://res.cloudinary.com/evertonfragoso/image/upload/v1585712530/background_hthqft.jpg') repeat;
+  box-shadow: inset 0 0 1rem 0 rgba(0, 0, 0, .75);
+  color: var(--game_font_color);
+  min-height: 30rem;
+  text-align: center;
 }
 
 .card {
   background-image: url('https://res.cloudinary.com/evertonfragoso/image/upload/v1585701490/cards_sheet_k2vwfi.png');
+  border-radius: var(--card_border_radius);
   cursor: pointer;
   display: inline-block;
+  margin: 0 var(--spacing);
   height: var(--card_height);
   width: var(--card_width);
+}
+
+.card:hover {
+  box-shadow: inset 0 0 var(--card_border_radius) 0 rgba(0, 0, 0, .75);
+}
+
+.cards_pile {
+  position: relative;
+}
+
+.card.back {
+  background-image: url('https://res.cloudinary.com/evertonfragoso/image/upload/v1585714511/card_back_smlrag.png');
+  position: absolute;
 }
 
 .hearts {

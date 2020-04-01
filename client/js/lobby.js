@@ -94,13 +94,19 @@ lobbyForm.addEventListener('submit', function(e) {
 
 socket.on('player:set:id', function(id) {  playerId = id })
 
-socket.on('lobby:update', function(players) {
+socket.on('lobby:update', function(data) {
+  let players = data.players,
+      playingPlayerId = data.playingPlayerId
+
   playerList.innerHTML = ''
 
   players.forEach(player => {
     let playerItem = document.createElement('li')
     playerItem.setAttribute('data-player-id', player.playerId)
-    playerItem.innerText = player.name
+    playerItem.innerText = player.name + ' (' + player.hand.length + ' cartas)'
+
+    if (playingPlayerId == player.playerId)
+      playerItem.innerText += ' (jogando)'
 
     playerList.appendChild(playerItem)
   })
@@ -117,6 +123,7 @@ socket.on('game:start', function(data) {
   resetScreen()
   renderHand(data.player)
   renderTableCards(data.startTableSize, data.deck)
+  renderCardsPile(data.deck)
 })
 
 socket.on('game:render', function(game) {
@@ -126,6 +133,7 @@ socket.on('game:render', function(game) {
   var player = game.players.filter(player => player.playerId === playerId).pop()
   renderHand(player)
   renderTableCards(game.startTableSize, game.deck)
+  renderCardsPile(game.deck)
 })
 
 /*

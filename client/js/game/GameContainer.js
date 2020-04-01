@@ -29,7 +29,8 @@ function renderTableCards (tableSize, deck) {
   const table = document.createElement('div')
   const tableCards = new Array()
 
-  table.innerText = 'Table Cards:'
+  table.classList.add('table_cards')
+  table.innerText = 'Mesa:'
 
   for (let i = 0; i < tableSize; i++) {
     tableCards.push(deck.pop())
@@ -41,9 +42,16 @@ function renderTableCards (tableSize, deck) {
 
 function renderCardsPile (deck) {
   const pile = document.createElement('div')
-  pile.innerText = 'Cards pile:'
+  pile.classList.add('cards_pile')
+  pile.innerText = 'Deck:'
 
-  _cardList(pile, deck)
+  for (let i = 0; i < deck.length; i++) {
+    let c = document.createElement('div')
+    c.classList.add('card', 'back')
+    c.setAttribute('style', 'margin-left: ' + i + 'px; margint-top: ' + i + 'px;')
+    _append(c, pile)
+  }
+
   _append(pile, container)
 }
 

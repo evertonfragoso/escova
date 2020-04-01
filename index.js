@@ -60,7 +60,7 @@ io.on('connection', socket => {
     }
     socket.join(room)
     socket.emit('lobby:join', room)
-    socket.emit('lobby:update', game.players)
+    socket.emit('lobby:update', { players: game.players, playingPlayerId: 0 })
   })
 
   socket.on('player:add', data => {
@@ -78,8 +78,8 @@ io.on('connection', socket => {
 
     socket.emit('player:set:id', newPlayer.playerId)
 
-    socket.emit('lobby:update', game.players)
-    socket.broadcast.to(data.room).emit('lobby:update', game.players)
+    socket.emit('lobby:update', { players: game.players, playingPlayerId: 0 })
+    socket.broadcast.to(data.room).emit('lobby:update', { players: game.players, playingPlayerId: 0 })
 
     if (game.players.length == maxPlayers) {
       game.startGame()
@@ -90,6 +90,10 @@ io.on('connection', socket => {
         player: newPlayer
       })
       socket.broadcast.to(data.room).emit('game:render', game)
+
+      let startingPlayer = game.startingPlayer.playerId
+      socket.emit('lobby:update', { players: game.players, playingPlayerId: startingPlayer })
+      socket.broadcast.to(data.room).emit('lobby:update', { players: game.players, playingPlayerId: startingPlayer })
     }
   })
 
@@ -103,7 +107,7 @@ io.on('connection', socket => {
 
     if (game)
       if (game.players.length > 0)
-        socket.broadcast.emit('lobby:update', game.players) // not working
+        socket.broadcast.emit('lobby:update', { players: game.players, playingPlayerId: 0 }) // not working
       else
         game = null
 
