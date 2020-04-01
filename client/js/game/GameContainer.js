@@ -1,81 +1,78 @@
-export default class GameContainer {
-  constructor (containerSelector = '') {
-    this.container = document.querySelector(containerSelector)
-  }
+const containerSelector = '#game'
+const container = document.querySelector(containerSelector)
 
-  resetScreen (container = this.container) {
-    container.innerHTML = ''
-  }
+function resetScreen () {
+  container.innerHTML = ''
+}
 
-  renderHand (player) {
+function renderHand (player) {
+  let hand = document.createElement('div')
+  hand.setAttribute('data-player-id', player.playerId)
+  hand.innerText = player.name
+
+  _cardList(hand, player.hand)
+  _append(hand, container)
+}
+
+function renderPlayersHands (players) {
+  for (let i in players) {
     let hand = document.createElement('div')
-    hand.setAttribute('data-player-id', player.playerId)
-    hand.innerText = player.name
+    hand.setAttribute('data-player-id', players[i].playerId)
+    hand.innerText = players[i].name
 
-    this._cardList(hand, player.hand)
-    this._append(hand)
+    _cardList(hand, players[i].hand)
+    _append(hand, container)
+  }
+}
+
+function renderTableCards (tableSize, deck) {
+  const table = document.createElement('div')
+  const tableCards = new Array()
+
+  table.innerText = 'Table Cards:'
+
+  for (let i = 0; i < tableSize; i++) {
+    tableCards.push(deck.pop())
   }
 
-  renderPlayersHands (players) {
-    for (let i in players) {
-      let hand = document.createElement('div')
-      hand.setAttribute('data-player-id', players[i].playerId)
-      hand.innerText = players[i].name
+  _cardList(table, tableCards)
+  _append(table, container)
+}
 
-      this._cardList(hand, players[i].hand)
-      this._append(hand)
-    }
+function renderCardsPile (deck) {
+  const pile = document.createElement('div')
+  pile.innerText = 'Cards pile:'
+
+  _cardList(pile, deck)
+  _append(pile, container)
+}
+
+// should be private
+
+function _append (child, container) {
+  container.appendChild(child)
+}
+
+function _cardList (container, cards) {
+  const list = document.createElement('ul')
+
+  for (let i = 0; i < cards.length; i++) {
+    let cardItem = _cardStructure(cards[i])
+    _append(cardItem, list)
   }
 
-  renderTableCards (tableSize, deck) {
-    const table = document.createElement('div')
-    const tableCards = new Array()
+  _append(list, container)
+}
 
-    table.innerText = 'Table Cards:'
+function _cardStructure (card) {
+  let cardItem = document.createElement('li')
+  let cardText = document.createElement('span')
 
-    for (let i = 0; i < tableSize; i++) {
-      tableCards.push(deck.pop())
-    }
+  cardText.classList.add('a11y')
+  cardText.innerText = card.DisplayValue + ' of ' + card.Suit
 
-    this._cardList(table, tableCards)
-    this._append(table)
-  }
+  cardItem.appendChild(cardText)
+  cardItem.classList.add('card', card.Suit, 'val' + card.DisplayValue)
 
-  renderCardsPile (deck) {
-    const pile = document.createElement('div')
-    pile.innerText = 'Cards pile:'
-
-    this._cardList(pile, deck)
-    this._append(pile)
-  }
-
-  // should be private
-
-  _append (child, container = this.container) {
-    container.appendChild(child)
-  }
-
-  _cardList (container, cards) {
-    const list = document.createElement('ul')
-
-    for (let i = 0; i < cards.length; i++) {
-      let cardItem = this._cardStructure(cards[i])
-      this._append(cardItem, list)
-    }
-
-    this._append(list, container)
-  }
-
-  _cardStructure (card) {
-    let cardItem = document.createElement('li')
-    let cardText = document.createElement('span')
-
-    cardText.classList.add('a11y')
-    cardText.innerText = card.DisplayValue + ' of ' + card.Suit
-
-    cardItem.appendChild(cardText)
-    cardItem.classList.add('card', card.Suit, 'val' + card.DisplayValue)
-
-    return cardItem
-  }
+  return cardItem
 }

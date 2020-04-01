@@ -1,8 +1,3 @@
-import GameContainer from './game/GameContainer.js'
-
-window.Game = {}
-const G = window.Game
-
 const socket = io()
 
 const rooms = document.querySelector('#rooms')
@@ -14,10 +9,6 @@ const playerList = lobby.querySelector('#player_list')
 const lobbyForm = lobby.querySelector('form')
 const lobbyInput = lobby.querySelector('#player')
 
-const containerSelector = '#game'
-
-G.container = new GameContainer(containerSelector)
-
 let playerId
 let playerName
 let roomId
@@ -28,7 +19,7 @@ let connected = false
 * ROOMS
 * */
 // list rooms
-socket.on('rooms:update', rooms => {
+socket.on('rooms:update', function(rooms) {
   roomList.innerHTML = ''
 
   for (let room in rooms) {
@@ -52,7 +43,7 @@ socket.on('rooms:update', rooms => {
   }
 })
 
-socket.on('lobby:join', room => {
+socket.on('lobby:join', function(room) {
   hideRooms()
   showLobby()
 })
@@ -61,16 +52,20 @@ socket.on('rooms:full', () => {
   console.log('sala cheia')
 })
 
-roomForm.addEventListener('submit', e => {
+roomForm.addEventListener('click', function(e) {
   e.preventDefault()
-  const qtd = e.submitter.value
-  socket.emit('rooms:create', qtd)
-  hideRooms()
-  showLobby()
+  let sourceElem = e.target
+
+  if (sourceElem.nodeName == 'BUTTON') {
+    const qtd = sourceElem.value
+    socket.emit('rooms:create', qtd)
+    hideRooms()
+    showLobby()
+  }
   return false
 })
 
-roomList.addEventListener('click', e => {
+roomList.addEventListener('click', function(e) {
   let sourceElem = e.target
 
   if (sourceElem.nodeName == 'A') {
@@ -84,7 +79,7 @@ roomList.addEventListener('click', e => {
 * LOBBY
 * */
 
-lobbyForm.addEventListener('submit', e => {
+lobbyForm.addEventListener('submit', function(e) {
   e.preventDefault()
 
   playerName = lobbyInput.value
@@ -97,9 +92,9 @@ lobbyForm.addEventListener('submit', e => {
   return false
 })
 
-socket.on('player:set:id', id => playerId = id)
+socket.on('player:set:id', function(id) {  playerId = id })
 
-socket.on('lobby:update', players => {
+socket.on('lobby:update', function(players) {
   playerList.innerHTML = ''
 
   players.forEach(player => {
@@ -117,35 +112,35 @@ socket.on('lobby:update', players => {
 * START GAME
 * */
 
-socket.on('game:start', data => {
+socket.on('game:start', function(data) {
   hideLobbyForm()
-  G.container.resetScreen()
-  G.container.renderHand(data.player)
-  G.container.renderTableCards(data.startTableSize, data.deck)
+  resetScreen()
+  renderHand(data.player)
+  renderTableCards(data.startTableSize, data.deck)
 })
 
-socket.on('game:render', game => {
+socket.on('game:render', function(game) {
   hideLobbyForm()
-  G.container.resetScreen()
+  resetScreen()
   // TODO: find a way to send only the current player
   var player = game.players.filter(player => player.playerId === playerId).pop()
-  G.container.renderHand(player)
-  G.container.renderTableCards(game.startTableSize, game.deck)
+  renderHand(player)
+  renderTableCards(game.startTableSize, game.deck)
 })
 
 /*
 * DISCONNECTIONS
 * */
 
-socket.on('disconnect', () => {
+socket.on('disconnect', function() {
   // console.log('Disconnected')
 })
 
-socket.on('reconnect', () => {
+socket.on('reconnect', function() {
   // console.log('Reconnected')
 })
 
-socket.on('reconnect_error', () => {
+socket.on('reconnect_error', function() {
   // console.log('Reconnection failed')
 })
 

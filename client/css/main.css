@@ -4,7 +4,7 @@
 }
 
 .card {
-  background-image: url(/images/cards_sheet.png);
+  background-image: url('https://res.cloudinary.com/evertonfragoso/image/upload/v1585701490/cards_sheet_k2vwfi.png');
   cursor: pointer;
   display: inline-block;
   height: var(--card_height);
