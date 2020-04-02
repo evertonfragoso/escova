@@ -1,14 +1,15 @@
-const containerSelector = '#game'
-const container = document.querySelector(containerSelector)
-
 function resetScreen () {
   container.innerHTML = ''
 }
 
-function renderHand (player) {
+function renderHand (player, isStartingPlayer) {
   let hand = document.createElement('div')
+  hand.classList.add('hand')
   hand.setAttribute('data-player-id', player.playerId)
-  hand.innerText = player.name
+  hand.innerHTML = '<h3>' + player.name + '</h3>'
+
+  if (isStartingPlayer)
+    hand.classList.add('playing')
 
   _cardList(hand, player.hand)
   _append(hand, container)
@@ -18,23 +19,18 @@ function renderPlayersHands (players) {
   for (let i in players) {
     let hand = document.createElement('div')
     hand.setAttribute('data-player-id', players[i].playerId)
-    hand.innerText = players[i].name
+    hand.innerHTML = '<h3>' + players[i].name + '</h3>'
 
     _cardList(hand, players[i].hand)
     _append(hand, container)
   }
 }
 
-function renderTableCards (tableSize, deck) {
+function renderTableCards (tableCards, deck) {
   const table = document.createElement('div')
-  const tableCards = new Array()
 
   table.classList.add('table_cards')
-  table.innerText = 'Mesa:'
-
-  for (let i = 0; i < tableSize; i++) {
-    tableCards.push(deck.pop())
-  }
+  table.innerHTML = '<h3>Mesa:</h3>'
 
   _cardList(table, tableCards)
   _append(table, container)
@@ -43,12 +39,12 @@ function renderTableCards (tableSize, deck) {
 function renderCardsPile (deck) {
   const pile = document.createElement('div')
   pile.classList.add('cards_pile')
-  pile.innerText = 'Deck:'
+  pile.innerHTML = '<h3>Deck:</h3>'
 
   for (let i = 0; i < deck.length; i++) {
     let c = document.createElement('div')
     c.classList.add('card', 'back')
-    c.setAttribute('style', 'margin-left: ' + i + 'px; margint-top: ' + i + 'px;')
+    c.setAttribute('style', 'border: 1px solif white; margin-left: ' + i + 'px; margint-top: ' + i + 'px;')
     _append(c, pile)
   }
 
@@ -80,7 +76,10 @@ function _cardStructure (card) {
   cardText.innerText = card.DisplayValue + ' of ' + card.Suit
 
   cardItem.appendChild(cardText)
-  cardItem.classList.add('card', card.Suit, 'val' + card.DisplayValue)
+  cardItem.classList.add('card')
+  cardItem.setAttribute('data-suit', card.Suit)
+  cardItem.setAttribute('data-value', card.Value)
+  cardItem.setAttribute('data-display-value', card.DisplayValue)
 
   return cardItem
 }

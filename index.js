@@ -18,7 +18,6 @@ const server = http.createServer(app)
 const io = new SocketIO(server)
 const clientPath = path.join(__dirname, 'client')
 
-const rooms = new Array()
 const handSize = 3
 const startTableSize = 4
 let maxPlayers = 2
@@ -55,6 +54,7 @@ io.on('connection', socket => {
   socket.on('rooms:join', room => {
     let playersInRoom = socket.adapter.rooms[room].length
     if (maxPlayers == playersInRoom) {
+      // TODO
       socket.emit('rooms:full')
       return
     }
@@ -75,6 +75,7 @@ io.on('connection', socket => {
     var newPlayer = new Player(playerName)
     game.players.push(newPlayer)
     socket.player = newPlayer
+    socket.roomId = data.room
 
     socket.emit('player:set:id', newPlayer.playerId)
 
@@ -85,16 +86,35 @@ io.on('connection', socket => {
       game.startGame()
 
       socket.emit('game:start', {
-        startTableSize: game.startTableSize,
+        table: game.table,
         deck: game.deck,
+        playingPlayer: game.playingPlayer,
         player: newPlayer
       })
       socket.broadcast.to(data.room).emit('game:render', game)
 
-      let startingPlayer = game.startingPlayer.playerId
-      socket.emit('lobby:update', { players: game.players, playingPlayerId: startingPlayer })
-      socket.broadcast.to(data.room).emit('lobby:update', { players: game.players, playingPlayerId: startingPlayer })
+      let playingPlayerId = game.playingPlayer
+      socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+      socket.broadcast.to(data.room).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
     }
+  })
+
+  socket.on('game:cards:pick', cards => {
+    let playerId = socket.player.playerId
+
+    game.pickCards(playerId, cards)
+    game.nextPlayer()
+
+    let playingPlayerId = game.playingPlayer
+    socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+    socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+
+    socket.emit('game:render', game)
+    socket.broadcast.to(socket.roomId).emit('game:render', game)
+  })
+
+  socket.on('game:cards:drop', card => {
+    // TODO
   })
 
   socket.on('disconnect', () => {

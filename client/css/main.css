@@ -1,31 +1,60 @@
 :root {
   --card_height: 315px;
   --card_width: 225px;
+  --card_border_colour: none;
   --card_border_radius: 1rem;
   --game_font_color: #fff;
   --spacing: 1rem;
 }
 
 main {
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-areas:
+    'header header'
+    'rooms-lobby actions'
+    'game game';
   margin: 0 auto;
-  max-width: 60rem;
+  max-width: 72rem;
+  min-width: 60rem;
 }
 
 main > header {
+  grid-area: header;
 }
 
 #rooms {
+  grid-area: rooms-lobby;
   padding: var(--spacing) 0;
 }
 
 #lobby {
+  grid-area: rooms-lobby;
   padding: var(--spacing) 0;
+}
+
+#actions {
+  align-items: flex-end;
+  display: flex;
+  grid-area: actions;
+}
+
+#actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 3rem;
+}
+
+#actions button:disabled {
+  cursor: not-allowed;
 }
 
 #game {
   background: url('https://res.cloudinary.com/evertonfragoso/image/upload/v1585712530/background_hthqft.jpg') repeat;
   box-shadow: inset 0 0 1rem 0 rgba(0, 0, 0, .75);
   color: var(--game_font_color);
+  grid-area: game;
   min-height: 30rem;
   text-align: center;
 }
@@ -33,15 +62,19 @@ main > header {
 .card {
   background-image: url('https://res.cloudinary.com/evertonfragoso/image/upload/v1585701490/cards_sheet_k2vwfi.png');
   border-radius: var(--card_border_radius);
-  cursor: pointer;
   display: inline-block;
   margin: 0 var(--spacing);
   height: var(--card_height);
   width: var(--card_width);
 }
 
-.card:hover {
-  box-shadow: inset 0 0 var(--card_border_radius) 0 rgba(0, 0, 0, .75);
+.playing .card {
+  box-shadow: inset 0 0 var(--card_border_radius) 0 var(--card_border_colour);
+  cursor: pointer;
+}
+
+.playing .card:hover {
+  --card_border_colour: rgba(0, 0, 0, .75);
 }
 
 .cards_pile {
@@ -53,70 +86,78 @@ main > header {
   position: absolute;
 }
 
-.hearts {
+.card.selected {
+  --card_border_colour: rgba(250, 0, 0, .75);
+}
+
+.card.selected:hover {
+  --card_border_colour: rgb(150, 0, 0);
+}
+
+.card[data-suit="hearts"] {
   background-position-y: 0;
 }
 
-.clubs {
+.card[data-suit="clubs"] {
   background-position-y: calc(var(--card_height) * -3);
 }
 
-.diamonds {
+.card[data-suit="diamonds"] {
   background-position-y: calc(var(--card_height) * -2);
 }
 
-.spades {
+.card[data-suit="spades"] {
   background-position-y: calc(var(--card_height) * -1);
 }
 
-.valA {
+.card[data-display-value="A"] {
   background-position-x: 0;
 }
 
-.val2 {
+.card[data-display-value="2"] {
   background-position-x: calc(var(--card_width) * -1);
 }
 
-.val3 {
+.card[data-display-value="3"] {
   background-position-x: calc(var(--card_width) * -2);
 }
 
-.val4 {
+.card[data-display-value="4"] {
   background-position-x: calc(var(--card_width) * -3);
 }
 
-.val5 {
+.card[data-display-value="5"] {
   background-position-x: calc(var(--card_width) * -4);
 }
 
-.val6 {
+.card[data-display-value="6"] {
   background-position-x: calc(var(--card_width) * -5);
 }
 
-.val7 {
+.card[data-display-value="7"] {
   background-position-x: calc(var(--card_width) * -6);
 }
 
-.val8 {
+.card[data-display-value="8"] {
   background-position-x: calc(var(--card_width) * -7);
 }
 
-.val9 {
+.card[data-display-value="9"] {
   background-position-x: calc(var(--card_width) * -8);
 }
 
-.val10 {
+.card[data-display-value="10"] {
   background-position-x: calc(var(--card_width) * -9);
 }
 
-.valJ {
+.card[data-display-value="J"] {
   background-position-x: calc(var(--card_width) * -10);
 }
 
-.valQ {
+.card[data-display-value="Q"] {
   background-position-x: calc(var(--card_width) * -11);
 }
 
-.valK {
+.card[data-display-value="K"] {
   background-position-x: calc(var(--card_width) * -12);
 }

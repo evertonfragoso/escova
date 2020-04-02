@@ -1,5 +1,7 @@
 const socket = io()
 
+const container = document.querySelector('#game')
+
 const rooms = document.querySelector('#rooms')
 const roomList = rooms.querySelector('#room_list')
 const roomForm = rooms.querySelector('form')
@@ -9,10 +11,17 @@ const playerList = lobby.querySelector('#player_list')
 const lobbyForm = lobby.querySelector('form')
 const lobbyInput = lobby.querySelector('#player')
 
+const actions = document.querySelector('#actions')
+
+const SUM_TO_TAKE_CARDS = 15
+
 let playerId
 let playerName
 let roomId
 let roomName
+let tableCardsContainer
+let selectedCards
+let totalSum
 let connected = false
 
 /*
@@ -118,22 +127,108 @@ socket.on('lobby:update', function(data) {
 * START GAME
 * */
 
-socket.on('game:start', function(data) {
+function setTableCardsContainer () {
+  tableCardsContainer = container.querySelector('.table_cards')
+}
+
+function cardContainerContains (card, klass) {
+  return card.parentNode.parentNode.classList.contains(klass)
+}
+
+function isPlaying (card) {
+  return (card.classList.contains('card') && cardContainerContains(card, 'playing'))
+}
+
+function isPlayingHand (card) {
+  return (isPlaying(card) && cardContainerContains(card, 'hand'))
+}
+
+function isPlayingTable (card) {
+  return (isPlaying(card) && cardContainerContains(card, 'table_cards'))
+}
+
+function sumCards () {
+  selectedCards = container.querySelectorAll('.card.selected')
+  selectedCards.forEach(function (card) {
+    totalSum += parseInt(card.getAttribute('data-value'))
+  })
+}
+
+socket.on('game:start', function(game) {
   hideLobbyForm()
   resetScreen()
-  renderHand(data.player)
-  renderTableCards(data.startTableSize, data.deck)
-  renderCardsPile(data.deck)
+  showActions()
+  disableActions()
+  var isPlayingPlayer = !!(game.playingPlayer == playerId)
+  renderHand(game.player, isPlayingPlayer)
+  renderTableCards(game.table, game.deck)
+  renderCardsPile(game.deck)
+  setTableCardsContainer()
 })
 
 socket.on('game:render', function(game) {
+console.log(game)
   hideLobbyForm()
   resetScreen()
+  showActions()
+  disableActions()
   // TODO: find a way to send only the current player
-  var player = game.players.filter(player => player.playerId === playerId).pop()
-  renderHand(player)
-  renderTableCards(game.startTableSize, game.deck)
+  var player = game.players.filter(p => p.playerId === playerId).pop()
+  var isPlayingPlayer = !!(game.playingPlayer === playerId)
+  renderHand(player, isPlayingPlayer)
+  renderTableCards(game.table, game.deck)
   renderCardsPile(game.deck)
+  setTableCardsContainer()
+})
+
+container.addEventListener('click', function(e) {
+  let sourceElem = e.target
+  totalSum = 0
+
+  // Select card from hand
+  if (isPlayingHand(sourceElem)) {
+    // only allow one card from hand to be selected
+    sourceElem.parentNode.childNodes.forEach(function(li) {
+      li.classList.remove('selected')
+    })
+    sourceElem.classList.add('selected')
+
+    tableCardsContainer.classList.add('playing')
+  }
+
+  // Select cards from table
+  if (isPlayingTable(sourceElem)) {
+    sourceElem.classList.toggle('selected')
+  }
+
+  // Sum selected cards
+  sumCards()
+
+  if (totalSum == SUM_TO_TAKE_CARDS) enableActions()
+  else disableActions()
+})
+
+actions.addEventListener('click', function (e) {
+  let sourceElem = e.target
+
+  if (sourceElem.id == 'cancel') {
+    container.querySelectorAll('.card.selected').forEach(function(card) {
+      card.classList.remove('selected')
+    })
+    container.querySelector('.table_cards').classList.remove('playing')
+  }
+
+  if (sourceElem.id == 'submit') {
+    let cards = new Array()
+    selectedCards.forEach(function(card) {
+      cards.push({
+        suit: card.getAttribute('data-suit'),
+        value: card.getAttribute('data-value')
+      })
+    })
+
+    socket.emit('game:cards:pick', cards)
+  }
 })
 
 /*
@@ -154,6 +249,25 @@ socket.on('reconnect_error', function() {
 
 /* *** */
 
+function showActions () {
+  actions.querySelector('div').removeAttribute('hidden')
+}
+
+function hideActions () {
+  actions.querySelector('div').setAttribute('hidden', '')
+}
+
+function enableActions () {
+  actions.querySelectorAll('button').forEach(function (action) {
+    action.removeAttribute('disabled')
+  })
+}
+
+function disableActions () {
+  actions.querySelectorAll('button').forEach(function (action) {
+    action.setAttribute('disabled', '')
+  })
+}
 
 function showLobby () {
   lobby.removeAttribute('hidden')

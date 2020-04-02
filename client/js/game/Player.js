@@ -5,5 +5,8 @@ export default class Player {
     this.playerId = GenerateRandomId()
     this.name = name
     this.hand = hand
+
+    this.pickedCards = new Array()
+    this.escovas = 0
   }
 }

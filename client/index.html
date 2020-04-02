@@ -40,11 +40,18 @@
         </form>
       </section>
 
+      <section id="actions">
+        <div hidden>
+          <button type="button" id="submit" disabled>✅</button>
+          <button type="button" id="cancel" disabled>🚫</button>
+        </div>
+      </section>
+
       <section id="game"></section>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script type="text/javascript" src="/js/game/GameContainer.js"></script>
     <script type="text/javascript" src="/js/lobby.js"></script>
   </body>
+    <script type="text/javascript" src="/js/game/GameContainer.js"></script>
 </html>
