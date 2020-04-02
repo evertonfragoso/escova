@@ -167,7 +167,6 @@ socket.on('game:start', function(game) {
 })
 
 socket.on('game:render', function(game) {
-console.log(game)
   hideLobbyForm()
   resetScreen()
   showActions()
