@@ -13,6 +13,8 @@ const lobbyInput = lobby.querySelector('#player')
 
 const actions = document.querySelector('#actions')
 
+const sumCardsOnScreen = document.querySelector('#cards_sum')
+
 const SUM_TO_TAKE_CARDS = 15
 
 let playerId
@@ -148,15 +150,32 @@ function isPlayingTable (card) {
 }
 
 function sumCards () {
+  totalSum = 0
   selectedCards = container.querySelectorAll('.card.selected')
   selectedCards.forEach(function (card) {
     totalSum += parseInt(card.getAttribute('data-value'))
   })
 }
 
+function updateSumCardsOnScreen () {
+  let klass
+
+  if (totalSum == SUM_TO_TAKE_CARDS)
+    klass = 'green'
+  else if (totalSum > 0)
+    klass = 'red'
+  else
+    klass = ''
+
+  let totalSpan = sumCardsOnScreen.querySelector('span')
+  totalSpan.setAttribute('class', klass)
+  totalSpan.innerText = totalSum
+}
+
 socket.on('game:start', function(game) {
   hideLobbyForm()
   resetScreen()
+  showSumCards()
   showActions()
   disableActions()
   var isPlayingPlayer = !!(game.playingPlayer == playerId)
@@ -169,6 +188,7 @@ socket.on('game:start', function(game) {
 socket.on('game:render', function(game) {
   hideLobbyForm()
   resetScreen()
+  showSumCards()
   showActions()
   disableActions()
   // TODO: find a way to send only the current player
@@ -182,7 +202,6 @@ socket.on('game:render', function(game) {
 
 container.addEventListener('click', function(e) {
   let sourceElem = e.target
-  totalSum = 0
 
   // Select card from hand
   if (isPlayingHand(sourceElem)) {
@@ -202,22 +221,35 @@ container.addEventListener('click', function(e) {
 
   // Sum selected cards
   sumCards()
+  updateSumCardsOnScreen()
 
-  if (totalSum == SUM_TO_TAKE_CARDS) enableActions()
-  else disableActions()
+  enableActions()
+  if (totalSum == 0)
+    disableActions()
 })
 
 actions.addEventListener('click', function (e) {
   let sourceElem = e.target
 
   if (sourceElem.id == 'cancel') {
+
     container.querySelectorAll('.card.selected').forEach(function(card) {
       card.classList.remove('selected')
     })
     container.querySelector('.table_cards').classList.remove('playing')
-  }
+    sumCards()
+    updateSumCardsOnScreen()
 
-  if (sourceElem.id == 'submit') {
+  } else if (sourceElem.id == 'discard') {
+
+    let card = container.querySelector('.hand').querySelector('.card.selected')
+    socket.emit('game:cards:drop', {
+      suit: card.getAttribute('data-suit'),
+      value: card.getAttribute('data-value')
+    })
+
+  } else if (sourceElem.id == 'pick') {
+
     let cards = new Array()
     selectedCards.forEach(function(card) {
       cards.push({
@@ -247,6 +279,14 @@ socket.on('reconnect_error', function() {
 })
 
 /* *** */
+
+function showSumCards () {
+  sumCardsOnScreen.querySelector('p').removeAttribute('hidden')
+}
+
+function hideSumCards () {
+  sumCardsOnScreen.querySelector('p').setAttribute('hidden', '')
+}
 
 function showActions () {
   actions.querySelector('div').removeAttribute('hidden')

@@ -3,17 +3,58 @@
   --card_width: 225px;
   --card_border_colour: none;
   --card_border_radius: 1rem;
+
+  --button_background_color: #000;
+
   --game_font_color: #fff;
+
   --spacing: 1rem;
+}
+
+html {
+  font-family: Verdana, sans-serif;
+  font-size: 1rem;
+}
+
+button {
+  background-color: var(--button_background_color);
+  border: none;
+  border-radius: .8rem;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 1rem;
+  text-transform: uppercase;
+}
+
+button:disabled {
+  --button_background_color: #999;
+  cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+  --button_background_color: #666;
+}
+
+input[type="text"] {
+  border: 1px solid #000;
+  border-radius: .8rem;
+  font-size: 1.5rem;
+  padding: .7rem .5rem;
+  width: 15rem;
+}
+
+label {
+  font-size: 1.5rem;
 }
 
 main {
   display: grid;
   grid-gap: 1rem;
   grid-template-areas:
-    'header header'
-    'rooms-lobby actions'
-    'game game';
+    'header header header header'
+    'rooms_lobby actions actions cards_sum'
+    'game game game game';
   margin: 0 auto;
   max-width: 72rem;
   min-width: 60rem;
@@ -24,12 +65,12 @@ main > header {
 }
 
 #rooms {
-  grid-area: rooms-lobby;
+  grid-area: rooms_lobby;
   padding: var(--spacing) 0;
 }
 
 #lobby {
-  grid-area: rooms-lobby;
+  grid-area: rooms_lobby;
   padding: var(--spacing) 0;
 }
 
@@ -39,15 +80,28 @@ main > header {
   grid-area: actions;
 }
 
-#actions button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 3rem;
+#cards_sum {
+  align-items: flex-end;
+  display: flex;
+  grid-area: cards_sum;
 }
 
-#actions button:disabled {
-  cursor: not-allowed;
+#cards_sum p {
+  margin: 0;
+  text-align: right;
+  width: 100%;
+}
+
+#cards_sum .green {
+  color: #3c3;
+}
+
+#cards_sum .red {
+  color: #c33;
+}
+
+#cards_sum p span {
+  font-size: 3rem;
 }
 
 #game {

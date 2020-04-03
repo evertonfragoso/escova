@@ -53,14 +53,14 @@ export default class Game {
         cardIndex = this.players[playerIndex].hand.findIndex(c => c.Suit == card.suit && c.Value == card.value)
         cardTransfer = this.players[playerIndex].hand.splice(cardIndex, 1)
       }
-      this.players[playerIndex].pickedCards.push(cardTransfer)
+      this.players[playerIndex].pickedCards.push(cardTransfer.pop())
     })
   }
 
   dropCard (playerId, card) {
     let playerIndex = this.players.findIndex(p => p.playerId === playerId)
-    let cardIndex = this.deck.findIndex(c => c.Suit == card.suit && c.DisplayValue == card.value)
-    let cardtransfer = this.players[playerIndex].hand[cardIndex].pop()
+    let cardIndex = this.players[playerIndex].hand.findIndex(c => c.Suit == card.suit && c.Value == card.value)
+    let cardTransfer = this.players[playerIndex].hand.splice(cardIndex, 1).pop()
     this.table.push(cardTransfer)
   }
 

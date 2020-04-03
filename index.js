@@ -114,7 +114,17 @@ io.on('connection', socket => {
   })
 
   socket.on('game:cards:drop', card => {
-    // TODO
+    let playerId = socket.player.playerId
+
+    game.dropCard(playerId, card)
+    game.nextPlayer()
+
+    let playingPlayerId = game.playingPlayer
+    socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+    socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+
+    socket.emit('game:render', game)
+    socket.broadcast.to(socket.roomId).emit('game:render', game)
   })
 
   socket.on('disconnect', () => {
