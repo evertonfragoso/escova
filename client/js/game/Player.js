@@ -8,5 +8,6 @@ export default class Player {
 
     this.pickedCards = new Array()
     this.escovas = 0
+    this.lastPicked = false
   }
 }

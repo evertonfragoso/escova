@@ -51,6 +51,16 @@ function renderCardsPile (deck) {
   _append(pile, container)
 }
 
+function renderPickedCards (player) {
+  let pickedCards = document.createElement('div')
+  pickedCards.classList.add('hand')
+  pickedCards.setAttribute('data-player-id', player.playerId)
+  pickedCards.innerHTML = '<h3>' + player.name + '</h3>'
+
+  _cardList(pickedCards, player.pickedCards)
+  _append(pickedCards, container)
+}
+
 // should be private
 
 function _append (child, container) {

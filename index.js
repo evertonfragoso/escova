@@ -79,9 +79,6 @@ io.on('connection', socket => {
 
     socket.emit('player:set:id', newPlayer.playerId)
 
-    socket.emit('lobby:update', { players: game.players, playingPlayerId: 0 })
-    socket.broadcast.to(data.room).emit('lobby:update', { players: game.players, playingPlayerId: 0 })
-
     if (game.players.length == maxPlayers) {
       game.startGame()
 
@@ -96,6 +93,9 @@ io.on('connection', socket => {
       let playingPlayerId = game.playingPlayer
       socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
       socket.broadcast.to(data.room).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+    } else {
+      socket.emit('lobby:update', { players: game.players, playingPlayerId: 0 })
+      socket.broadcast.to(data.room).emit('lobby:update', { players: game.players, playingPlayerId: 0 })
     }
   })
 
@@ -103,28 +103,47 @@ io.on('connection', socket => {
     let playerId = socket.player.playerId
 
     game.pickCards(playerId, cards)
-    game.nextPlayer()
 
-    let playingPlayerId = game.playingPlayer
-    socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
-    socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+    if (game.gameOver()) {
+      game.pickTable()
+      socket.emit('game:over', game.players)
+      socket.broadcast.to(socket.roomId).emit('game:over', game.players)
+    } else {
+      game.nextPlayer()
 
-    socket.emit('game:render', game)
-    socket.broadcast.to(socket.roomId).emit('game:render', game)
+      if (game.emptyHands())
+        game.deal()
+
+      let playingPlayerId = game.playingPlayer
+      socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+      socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+
+      socket.emit('game:render', game)
+      socket.broadcast.to(socket.roomId).emit('game:render', game)
+    }
   })
 
   socket.on('game:cards:drop', card => {
     let playerId = socket.player.playerId
 
     game.dropCard(playerId, card)
-    game.nextPlayer()
 
-    let playingPlayerId = game.playingPlayer
-    socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
-    socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+    if (game.gameOver()) {
+      socket.emit('game:over', game.players)
+      socket.broadcast.to(socket.roomId).emit('game:over', game.players)
+    } else {
+      game.nextPlayer()
 
-    socket.emit('game:render', game)
-    socket.broadcast.to(socket.roomId).emit('game:render', game)
+      if (game.emptyHands())
+        game.deal()
+
+      let playingPlayerId = game.playingPlayer
+      socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+      socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+
+      socket.emit('game:render', game)
+      socket.broadcast.to(socket.roomId).emit('game:render', game)
+    }
   })
 
   socket.on('disconnect', () => {

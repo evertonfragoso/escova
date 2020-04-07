@@ -1,7 +1,10 @@
 import Deck from './Deck.js'
 
+const reducer = (accumulator, currentValue) => accumulator + currentValue
+
 export default class Game {
   constructor (handSize, startTableSize) {
+    this.gameDeck
     this.deck
     this.table
     this.players
@@ -14,19 +17,23 @@ export default class Game {
   }
 
   startGame () {
-    const newDeck = new Deck()
+    this.gameDeck = new Deck()
 
     let randomPlayer = this.randomPlayer()
 
-    this.deck = newDeck.deck
+    this.deck = this.gameDeck.deck
     this.playingPlayer = randomPlayer.playerId
     this.previousPlayer = this.playingPlayer.playerId
 
-    newDeck.deal(this.players, this.handSize)
+    this.gameDeck.deal(this.players, this.handSize)
 
     while(this.table.length < this.startTableSize) {
       this.table.push(this.deck.shift())
     }
+  }
+
+  deal () {
+    this.gameDeck.deal(this.players, this.handSize)
   }
 
   nextPlayer () {
@@ -55,6 +62,12 @@ export default class Game {
       }
       this.players[playerIndex].pickedCards.push(cardTransfer.pop())
     })
+
+    this.players.forEach(player => player.lastPicked = false)
+    this.players[playerIndex].lastPicked = true
+
+    if (this.table.length == 0)
+      this.players[playerIndex].escovas++
   }
 
   dropCard (playerId, card) {
@@ -62,6 +75,26 @@ export default class Game {
     let cardIndex = this.players[playerIndex].hand.findIndex(c => c.Suit == card.suit && c.Value == card.value)
     let cardTransfer = this.players[playerIndex].hand.splice(cardIndex, 1).pop()
     this.table.push(cardTransfer)
+  }
+
+  emptyHands () {
+    let hands = new Array()
+    this.players.forEach(player => hands.push(player.hand.length))
+
+    if (hands.reduce(reducer) == 0)
+      return true
+
+    return false
+  }
+
+  pickTable () {
+    let playerIndex = this.players.findIndex(p => p.lastPicked === true)
+    while (this.table.length > 0)
+      this.players[playerIndex].pickedCards.push(this.table.pop())
+  }
+
+  gameOver () {
+    return !!(this.deck.length == 0 && this.emptyHands())
   }
 
   randomPlayer () {

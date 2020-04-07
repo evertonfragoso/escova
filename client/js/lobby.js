@@ -46,7 +46,7 @@ socket.on('rooms:update', function(rooms) {
 
       let a = document.createElement('a')
       a.setAttribute('href', '#'+ roomId)
-      a.innerText = '(entrar)'
+      a.innerText = 'entrar'
 
       item.appendChild(a)
       roomList.appendChild(item)
@@ -59,7 +59,7 @@ socket.on('lobby:join', function(room) {
   showLobby()
 })
 
-socket.on('rooms:full', () => {
+socket.on('rooms:full', function() {
   console.log('sala cheia')
 })
 
@@ -90,6 +90,12 @@ roomList.addEventListener('click', function(e) {
 * LOBBY
 * */
 
+function hasSeteBelo (hand) {
+  let cardIndex = hand.findIndex(function(c) { return c.Suit == 'diamonds' && c.Value == 7 })
+  if (cardIndex > -1) return true
+  return false
+}
+
 lobbyForm.addEventListener('submit', function(e) {
   e.preventDefault()
 
@@ -111,13 +117,32 @@ socket.on('lobby:update', function(data) {
 
   playerList.innerHTML = ''
 
-  players.forEach(player => {
+  players.forEach(function(player) {
     let playerItem = document.createElement('li')
+    let handCards = document.createElement('span')
+    let escovas = document.createElement('span')
+    let seteBelo = document.createElement('span')
+
     playerItem.setAttribute('data-player-id', player.playerId)
-    playerItem.innerText = player.name + ' (' + player.hand.length + ' cartas)'
+    playerItem.innerText = player.name
+
+    handCards.classList.add('cards_hand')
+    handCards.innerText = player.hand.length
+
+    escovas.classList.add('escova')
+    escovas.innerText = player.escovas
+
+    playerItem.appendChild(handCards)
+    playerItem.appendChild(escovas)
+
+    if (hasSeteBelo(player.pickedCards)) {
+      seteBelo.classList.add('seven_diamonds')
+      seteBelo.innerHTML = '&nbsp;'
+      playerItem.appendChild(seteBelo)
+    }
 
     if (playingPlayerId == player.playerId)
-      playerItem.innerText += ' (jogando)'
+      playerItem.classList.add('playing_player')
 
     playerList.appendChild(playerItem)
   })
@@ -177,7 +202,7 @@ socket.on('game:start', function(game) {
   resetScreen()
   showSumCards()
   showActions()
-  disableActions()
+  disableActions('all')
   var isPlayingPlayer = !!(game.playingPlayer == playerId)
   renderHand(game.player, isPlayingPlayer)
   renderTableCards(game.table, game.deck)
@@ -190,9 +215,9 @@ socket.on('game:render', function(game) {
   resetScreen()
   showSumCards()
   showActions()
-  disableActions()
+  disableActions('all')
   // TODO: find a way to send only the current player
-  var player = game.players.filter(p => p.playerId === playerId).pop()
+  var player = game.players.filter(function(p) { return p.playerId === playerId }).pop()
   var isPlayingPlayer = !!(game.playingPlayer === playerId)
   renderHand(player, isPlayingPlayer)
   renderTableCards(game.table, game.deck)
@@ -223,43 +248,63 @@ container.addEventListener('click', function(e) {
   sumCards()
   updateSumCardsOnScreen()
 
-  enableActions()
+  enableActions('cancel')
+
+  if (totalSum == 15)
+    enableActions('pick')
+  else
+    disableActions('pick')
+
+  if (totalSum > 0 != 15)
+    enableActions('discard')
+  else
+    disableActions('discard')
+
   if (totalSum == 0)
-    disableActions()
+    disableActions('all')
 })
 
 actions.addEventListener('click', function (e) {
   let sourceElem = e.target
 
-  if (sourceElem.id == 'cancel') {
-
-    container.querySelectorAll('.card.selected').forEach(function(card) {
-      card.classList.remove('selected')
-    })
-    container.querySelector('.table_cards').classList.remove('playing')
-    sumCards()
-    updateSumCardsOnScreen()
-
-  } else if (sourceElem.id == 'discard') {
-
-    let card = container.querySelector('.hand').querySelector('.card.selected')
-    socket.emit('game:cards:drop', {
-      suit: card.getAttribute('data-suit'),
-      value: card.getAttribute('data-value')
-    })
-
-  } else if (sourceElem.id == 'pick') {
-
-    let cards = new Array()
-    selectedCards.forEach(function(card) {
-      cards.push({
+  switch(sourceElem.id) {
+    case 'cancel':
+      container.querySelector('.table_cards').classList.remove('playing')
+      break
+    case 'discard':
+      let card = container.querySelector('.hand').querySelector('.card.selected')
+      socket.emit('game:cards:drop', {
         suit: card.getAttribute('data-suit'),
         value: card.getAttribute('data-value')
       })
-    })
-
-    socket.emit('game:cards:pick', cards)
+      break
+    case 'pick':
+      let cards = new Array()
+      selectedCards.forEach(function(card) {
+        cards.push({
+          suit: card.getAttribute('data-suit'),
+          value: card.getAttribute('data-value')
+        })
+      })
+      socket.emit('game:cards:pick', cards)
+      break
+    default: break
   }
+
+  clearSelectedCards()
+  sumCards()
+  updateSumCardsOnScreen()
+  disableActions('all')
+})
+
+/*
+* GAME OVER
+* */
+
+socket.on('game:over', function(players) {
+  let player = players.filter(function(p) { return p.playerId === playerId }).pop()
+  resetScreen()
+  renderPickedCards(player)
 })
 
 /*
@@ -267,18 +312,24 @@ actions.addEventListener('click', function (e) {
 * */
 
 socket.on('disconnect', function() {
-  // console.log('Disconnected')
+  console.log('Disconnected')
 })
 
 socket.on('reconnect', function() {
-  // console.log('Reconnected')
+  console.log('Reconnected')
 })
 
 socket.on('reconnect_error', function() {
-  // console.log('Reconnection failed')
+  console.log('Reconnection failed')
 })
 
 /* *** */
+
+function clearSelectedCards () {
+  container.querySelectorAll('.card.selected').forEach(function (card) {
+    card.classList.remove('selected')
+  })
+}
 
 function showSumCards () {
   sumCardsOnScreen.querySelector('p').removeAttribute('hidden')
@@ -296,16 +347,22 @@ function hideActions () {
   actions.querySelector('div').setAttribute('hidden', '')
 }
 
-function enableActions () {
-  actions.querySelectorAll('button').forEach(function (action) {
-    action.removeAttribute('disabled')
-  })
+function enableActions (id) {
+  if (id == 'all') {
+    actions.querySelectorAll('button').forEach(function (action) {
+      action.removeAttribute('disabled')
+    })
+  } else
+    actions.querySelector('#' + id).removeAttribute('disabled')
 }
 
-function disableActions () {
-  actions.querySelectorAll('button').forEach(function (action) {
-    action.setAttribute('disabled', '')
-  })
+function disableActions (id) {
+  if (id == 'all') {
+    actions.querySelectorAll('button').forEach(function (action) {
+      action.setAttribute('disabled', '')
+    })
+  } else
+    actions.querySelector('#' + id).setAttribute('disabled', '')
 }
 
 function showLobby () {
