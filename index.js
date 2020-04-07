@@ -32,6 +32,26 @@ io.on('connection', socket => {
     io.sockets.emit('rooms:update', io.sockets.adapter.rooms)
   }
 
+  function playerAction () {
+    if (game.gameOver()) {
+      game.pickTable()
+      socket.emit('game:over', game.players)
+      socket.broadcast.to(socket.roomId).emit('game:over', game.players)
+    } else {
+      game.nextPlayer()
+
+      if (game.emptyHands())
+        game.deal()
+
+      let playingPlayerId = game.playingPlayer
+      socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+      socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
+
+      socket.emit('game:render', game)
+      socket.broadcast.to(socket.roomId).emit('game:render', game)
+    }
+  }
+
   // update all when connecting
   updateRoomList()
 
@@ -104,23 +124,7 @@ io.on('connection', socket => {
 
     game.pickCards(playerId, cards)
 
-    if (game.gameOver()) {
-      game.pickTable()
-      socket.emit('game:over', game.players)
-      socket.broadcast.to(socket.roomId).emit('game:over', game.players)
-    } else {
-      game.nextPlayer()
-
-      if (game.emptyHands())
-        game.deal()
-
-      let playingPlayerId = game.playingPlayer
-      socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
-      socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
-
-      socket.emit('game:render', game)
-      socket.broadcast.to(socket.roomId).emit('game:render', game)
-    }
+    playerAction()
   })
 
   socket.on('game:cards:drop', card => {
@@ -128,22 +132,7 @@ io.on('connection', socket => {
 
     game.dropCard(playerId, card)
 
-    if (game.gameOver()) {
-      socket.emit('game:over', game.players)
-      socket.broadcast.to(socket.roomId).emit('game:over', game.players)
-    } else {
-      game.nextPlayer()
-
-      if (game.emptyHands())
-        game.deal()
-
-      let playingPlayerId = game.playingPlayer
-      socket.emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
-      socket.broadcast.to(socket.roomId).emit('lobby:update', { players: game.players, playingPlayerId: playingPlayerId })
-
-      socket.emit('game:render', game)
-      socket.broadcast.to(socket.roomId).emit('game:render', game)
-    }
+    playerAction()
   })
 
   socket.on('disconnect', () => {

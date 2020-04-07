@@ -57,7 +57,17 @@ function renderPickedCards (player) {
   pickedCards.setAttribute('data-player-id', player.playerId)
   pickedCards.innerHTML = '<h3>' + player.name + '</h3>'
 
-  _cardList(pickedCards, player.pickedCards)
+  // order by number first...
+  let sortedCards = player.pickedCards.sort((a, b) => a.Value - b.Value)
+  // then by suit
+  sortedCards.sort((a, b) => {
+    if (a.Suit < b.Suit) return -1
+    if (a.Suit > b.Suit) return 1
+
+    return 0
+  })
+
+  _cardList(pickedCards, sortedCards)
   _append(pickedCards, container)
 }
 
