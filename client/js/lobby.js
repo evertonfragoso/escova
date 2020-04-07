@@ -1,6 +1,7 @@
 const socket = io()
 
 const container = document.querySelector('#game')
+const cardsPile = document.querySelector('#cards_pile > div')
 
 const rooms = document.querySelector('#rooms')
 const roomList = rooms.querySelector('#room_list')
@@ -14,6 +15,8 @@ const lobbyInput = lobby.querySelector('#player')
 const actions = document.querySelector('#actions')
 
 const sumCardsOnScreen = document.querySelector('#cards_sum')
+
+const logs = document.querySelector('#log')
 
 const SUM_TO_TAKE_CARDS = 15
 
@@ -198,32 +201,29 @@ function updateSumCardsOnScreen () {
 }
 
 socket.on('game:start', function(game) {
-  hideLobbyForm()
-  resetScreen()
-  showSumCards()
-  showActions()
-  disableActions('all')
   var isPlayingPlayer = !!(game.playingPlayer == playerId)
-  renderHand(game.player, isPlayingPlayer)
-  renderTableCards(game.table, game.deck)
-  renderCardsPile(game.deck)
-  setTableCardsContainer()
+  gameRender(game, game.player, isPlayingPlayer)
 })
 
 socket.on('game:render', function(game) {
+  // TODO: find a way to send only the current player
+  var player = game.players.filter(function(p) { return p.playerId === playerId }).pop()
+  var isPlayingPlayer = !!(game.playingPlayer === playerId)
+  gameRender(game, player, isPlayingPlayer)
+})
+
+function gameRender (game, player, isPlayingPlayer) {
   hideLobbyForm()
   resetScreen()
   showSumCards()
   showActions()
+  showBoard()
   disableActions('all')
-  // TODO: find a way to send only the current player
-  var player = game.players.filter(function(p) { return p.playerId === playerId }).pop()
-  var isPlayingPlayer = !!(game.playingPlayer === playerId)
   renderHand(player, isPlayingPlayer)
   renderTableCards(game.table, game.deck)
   renderCardsPile(game.deck)
   setTableCardsContainer()
-})
+}
 
 container.addEventListener('click', function(e) {
   let sourceElem = e.target
@@ -275,7 +275,8 @@ actions.addEventListener('click', function (e) {
       let card = container.querySelector('.hand').querySelector('.card.selected')
       socket.emit('game:cards:drop', {
         suit: card.getAttribute('data-suit'),
-        value: card.getAttribute('data-value')
+        value: card.getAttribute('data-value'),
+        displayValue: card.getAttribute('data-display-value')
       })
       break
     case 'pick':
@@ -283,7 +284,8 @@ actions.addEventListener('click', function (e) {
       selectedCards.forEach(function(card) {
         cards.push({
           suit: card.getAttribute('data-suit'),
-          value: card.getAttribute('data-value')
+          value: card.getAttribute('data-value'),
+          displayValue: card.getAttribute('data-display-value')
         })
       })
       socket.emit('game:cards:pick', cards)
@@ -296,6 +298,17 @@ actions.addEventListener('click', function (e) {
   updateSumCardsOnScreen()
   disableActions('all')
 })
+
+/*
+* GAME OVER
+* */
+
+socket.on('log', function(message) {
+  let li = document.createElement('li')
+  li.innerText = message
+  logs.querySelector('ul').appendChild(li)
+})
+
 
 /*
 * GAME OVER
@@ -384,6 +397,12 @@ function hideRooms () {
 
 function hideLobbyForm () {
   lobbyForm.setAttribute('hidden', '')
+}
+
+function showBoard () {
+  container.removeAttribute('hidden')
+  cardsPile.removeAttribute('hidden')
+  logs.removeAttribute('hidden')
 }
 
 function load () {

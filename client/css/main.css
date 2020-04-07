@@ -52,16 +52,31 @@ main {
   display: grid;
   grid-gap: 1rem;
   grid-template-areas:
-    'header header header header'
-    'rooms_lobby actions actions cards_sum'
-    'game game game game';
+    'header       header      header  header'
+    'rooms_lobby  rooms_lobby actions cards_sum'
+    'game         game        game    cards_pile'
+    'game         game        game    cards_pile'
+    'game         game        game    log'
+    'game         game        game    log'
+    'game         game        game    log';
   margin: 0 auto;
-  max-width: 72rem;
-  min-width: 60rem;
+  width: 80rem;
 }
 
 main > header {
   grid-area: header;
+}
+
+#log {
+  background-color: silver;
+  border: 1px solid black;
+  font-family: Times, serif;
+  font-size: 1.5rem;
+  grid-area: log;
+  min-height: 38rem;
+  overflow-y: auto;
+  padding: .5rem;
+  width: 20rem;
 }
 
 #rooms {
@@ -165,8 +180,9 @@ main > header {
   box-shadow: inset 0 0 1rem 0 rgba(0, 0, 0, .75);
   color: var(--game_font_color);
   grid-area: game;
-  min-height: 30rem;
+  min-height: 70rem;
   text-align: center;
+  width: 60rem;
 }
 
 .card {
@@ -187,7 +203,12 @@ main > header {
   --card_border_colour: rgba(0, 0, 0, .75);
 }
 
-.cards_pile {
+#cards_pile {
+  grid-area: cards_pile;
+  height: 22rem;
+}
+
+#cards_pile > div {
   position: relative;
 }
 

@@ -37,18 +37,14 @@ function renderTableCards (tableCards, deck) {
 }
 
 function renderCardsPile (deck) {
-  const pile = document.createElement('div')
-  pile.classList.add('cards_pile')
-  pile.innerHTML = '<h3>Deck:</h3>'
+  cardsPile.innerHTML = '<h3>' + deck.length + ' cartas</h3>'
 
   for (let i = 0; i < deck.length; i++) {
     let c = document.createElement('div')
     c.classList.add('card', 'back')
     c.setAttribute('style', 'border: 1px solif white; margin-left: ' + i + 'px; margint-top: ' + i + 'px;')
-    _append(c, pile)
+    _append(c, cardsPile)
   }
-
-  _append(pile, container)
 }
 
 function renderPickedCards (player) {

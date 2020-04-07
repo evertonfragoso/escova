@@ -11,6 +11,7 @@ export default class Game {
     this.playingPlayer
     this.previousPlayer
 
+    this.turn = 1
     this.table = new Array()
     this.handSize = handSize
     this.startTableSize = startTableSize
