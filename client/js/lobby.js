@@ -241,8 +241,6 @@ window.gameContainer.addEventListener('click', function (e) {
   sumCards()
   updateSumCardsOnScreen()
 
-  enableActions('cancel')
-
   if (totalSum === 15) enableActions('pick')
   else disableActions('pick')
 
@@ -257,28 +255,21 @@ actions.addEventListener('click', function (e) {
   const card = window.gameContainer.querySelector('.hand .card.selected')
   const cards = []
 
-  switch (sourceElem.id) {
-    case 'cancel':
-      window.gameContainer.querySelector('.table_cards').classList.remove('playing')
-      break
-    case 'discard':
-      socket.emit('game:cards:drop', {
+  if (sourceElem.id === 'discard') {
+    socket.emit('game:cards:drop', {
+      suit: card.getAttribute('data-suit'),
+      value: card.getAttribute('data-value'),
+      displayValue: card.getAttribute('data-display-value')
+    })
+  } else if (sourceElem.id === 'pick') {
+    selectedCards.forEach(function (card) {
+      cards.push({
         suit: card.getAttribute('data-suit'),
         value: card.getAttribute('data-value'),
         displayValue: card.getAttribute('data-display-value')
       })
-      break
-    case 'pick':
-      selectedCards.forEach(function (card) {
-        cards.push({
-          suit: card.getAttribute('data-suit'),
-          value: card.getAttribute('data-value'),
-          displayValue: card.getAttribute('data-display-value')
-        })
-      })
-      socket.emit('game:cards:pick', cards)
-      break
-    default: break
+    })
+    socket.emit('game:cards:pick', cards)
   }
 
   clearSelectedCards()

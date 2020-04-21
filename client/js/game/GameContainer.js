@@ -51,7 +51,7 @@ window.renderCardsPile = function (deck) {
   for (let i = 0; i < deck.length; i++) {
     const c = document.createElement('div')
     c.classList.add('card', 'back')
-    c.setAttribute('style', 'border: 1px solif white; margin-left: ' + i + 'px; margint-top: ' + i + 'px;')
+    c.setAttribute('style', 'border: 1px solid grey; margin-left: ' + i + 'px; margin-top: ' + i + 'px;')
     _append(c, cardsPile)
   }
 }

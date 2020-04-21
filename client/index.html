@@ -44,7 +44,6 @@
         <div hidden>
           <button type="button" id="pick">Pegar cartas</button>
           <button type="button" id="discard">Descartar</button>
-          <button type="button" id="cancel">Resetar</button>
         </div>
       </section>
 
@@ -56,13 +55,15 @@
 
       <section id="game" hidden></section>
 
-      <section id="cards_pile">
-        <div hidden></div>
-      </section>
+      <aside>
+        <section id="cards_pile">
+          <div hidden></div>
+        </section>
 
-      <section id="log" hidden>
-        <ul></ul>
-      </section>
+        <section id="log" hidden>
+          <ul></ul>
+        </section>
+      </aside>
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
