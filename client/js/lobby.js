@@ -219,7 +219,7 @@ function gameRender (game, player, isPlayingPlayer) {
   setTableCardsContainer()
 }
 
-window.gamecontainer.addEventListener('click', function (e) {
+window.gameContainer.addEventListener('click', function (e) {
   const sourceElem = e.target
 
   // Select card from hand
@@ -387,14 +387,16 @@ function hideLobbyForm () {
 
 function showBoard () {
   window.gameContainer.removeAttribute('hidden')
-  cardsPile.removeAttribute('hidden')
+  window.gameCardsPile.removeAttribute('hidden')
   logs.removeAttribute('hidden')
 }
 
 function load () {
   socket.emit('rooms:get')
 }
-function ready () {}
+function ready () {
+  window.setContainers()
+}
 
 window.addEventListener('load', load)
 document.addEventListener('DOMContentLoaded', ready)

@@ -1,4 +1,4 @@
-import Card from './Card.js'
+import Card from './Card'
 
 export default class Deck {
   constructor (shuffle = true) {

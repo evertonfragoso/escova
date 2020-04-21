@@ -1,5 +1,10 @@
-const container = window.gameContainer
-const cardsPile = window.gameCardsPile
+let container = null
+let cardsPile = null
+
+window.setContainers = function () {
+  container = window.gameContainer
+  cardsPile = window.gameCardsPile
+}
 
 window.resetScreen = function () {
   container.innerHTML = ''
