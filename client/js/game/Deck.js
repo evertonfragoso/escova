@@ -7,7 +7,7 @@ export default class Deck {
     // escova style
     const values = ['A', '2', '3', '4', '5', '6', '7', 'Q', 'J', 'K']
 
-    this.deck = new Array()
+    this.deck = []
 
     suits.forEach(suit => {
       values.forEach(val => {
@@ -20,9 +20,9 @@ export default class Deck {
 
   shuffle () {
     for (let i = 0; i < this.deck.length * 10; i++) {
-      let location1 = Math.floor(Math.random() * this.deck.length)
-      let location2 = Math.floor(Math.random() * this.deck.length)
-      let tmp = this.deck[location1]
+      const location1 = Math.floor(Math.random() * this.deck.length)
+      const location2 = Math.floor(Math.random() * this.deck.length)
+      const tmp = this.deck[location1]
 
       this.deck[location1] = this.deck[location2]
       this.deck[location2] = tmp
@@ -30,10 +30,10 @@ export default class Deck {
   }
 
   deal (players, handSize) {
-    for (let p in players) {
-      players[p].hand = new Array()
+    for (const p in players) {
+      players[p].hand = []
       for (let c = 0; c < handSize; c++) {
-        let card = this.deck.pop()
+        const card = this.deck.pop()
         players[p].hand.push(card)
       }
     }

@@ -1,23 +1,27 @@
-function resetScreen () {
+const container = window.gameContainer
+const cardsPile = window.gameCardsPile
+
+window.resetScreen = function () {
   container.innerHTML = ''
 }
 
-function renderHand (player, isStartingPlayer) {
-  let hand = document.createElement('div')
+window.renderHand = function (player, isStartingPlayer) {
+  const hand = document.createElement('div')
   hand.classList.add('hand')
   hand.setAttribute('data-player-id', player.playerId)
   hand.innerHTML = '<h3>' + player.name + '</h3>'
 
-  if (isStartingPlayer)
+  if (isStartingPlayer) {
     hand.classList.add('playing')
+  }
 
   _cardList(hand, player.hand)
   _append(hand, container)
 }
 
-function renderPlayersHands (players) {
-  for (let i in players) {
-    let hand = document.createElement('div')
+window.renderPlayersHands = function (players) {
+  for (const i in players) {
+    const hand = document.createElement('div')
     hand.setAttribute('data-player-id', players[i].playerId)
     hand.innerHTML = '<h3>' + players[i].name + '</h3>'
 
@@ -26,7 +30,7 @@ function renderPlayersHands (players) {
   }
 }
 
-function renderTableCards (tableCards, deck) {
+window.renderTableCards = function (tableCards, deck) {
   const table = document.createElement('div')
 
   table.classList.add('table_cards')
@@ -36,25 +40,25 @@ function renderTableCards (tableCards, deck) {
   _append(table, container)
 }
 
-function renderCardsPile (deck) {
+window.renderCardsPile = function (deck) {
   cardsPile.innerHTML = '<h3>' + deck.length + ' cartas</h3>'
 
   for (let i = 0; i < deck.length; i++) {
-    let c = document.createElement('div')
+    const c = document.createElement('div')
     c.classList.add('card', 'back')
     c.setAttribute('style', 'border: 1px solif white; margin-left: ' + i + 'px; margint-top: ' + i + 'px;')
     _append(c, cardsPile)
   }
 }
 
-function renderPickedCards (player) {
-  let pickedCards = document.createElement('div')
+window.renderPickedCards = function (player) {
+  const pickedCards = document.createElement('div')
   pickedCards.classList.add('hand')
   pickedCards.setAttribute('data-player-id', player.playerId)
   pickedCards.innerHTML = '<h3>' + player.name + '</h3>'
 
   // order by number first...
-  let sortedCards = player.pickedCards.sort((a, b) => a.Value - b.Value)
+  const sortedCards = player.pickedCards.sort((a, b) => a.Value - b.Value)
   // then by suit
   sortedCards.sort((a, b) => {
     if (a.Suit < b.Suit) return -1
@@ -77,7 +81,7 @@ function _cardList (container, cards) {
   const list = document.createElement('ul')
 
   for (let i = 0; i < cards.length; i++) {
-    let cardItem = _cardStructure(cards[i])
+    const cardItem = _cardStructure(cards[i])
     _append(cardItem, list)
   }
 
@@ -85,8 +89,8 @@ function _cardList (container, cards) {
 }
 
 function _cardStructure (card) {
-  let cardItem = document.createElement('li')
-  let cardText = document.createElement('span')
+  const cardItem = document.createElement('li')
+  const cardText = document.createElement('span')
 
   cardText.classList.add('a11y')
   cardText.innerText = card.DisplayValue + ' of ' + card.Suit

@@ -1,7 +1,7 @@
 const socket = io()
 
-const container = document.querySelector('#game')
-const cardsPile = document.querySelector('#cards_pile > div')
+window.gameContainer = document.querySelector('#game')
+window.gameCardsPile = document.querySelector('#cards_pile > div')
 
 const rooms = document.querySelector('#rooms')
 const roomList = rooms.querySelector('#room_list')
@@ -33,22 +33,22 @@ let connected = false
 * ROOMS
 * */
 // list rooms
-socket.on('rooms:update', function(rooms) {
+socket.on('rooms:update', function (rooms) {
   roomList.innerHTML = ''
 
-  for (let room in rooms) {
+  for (const room in rooms) {
     // room format (no quotes): "qtd:[0-9];id:[a-z0-9]{4}"
-    if (room.match(/^qtd\:\d\;id\:[a-z0-9]{4}$/)) {
+    if (room.match(/^qtd:\d;id:[a-z0-9]{4}$/)) {
       roomName = room
       roomId = room.split(';').pop().split(':').pop()
 
-      let roomQtd = room.split(';').shift().split(':').pop()
+      const roomQtd = room.split(';').shift().split(':').pop()
 
-      let item = document.createElement('li')
+      const item = document.createElement('li')
       item.innerText = roomQtd + ' jogadores '
 
-      let a = document.createElement('a')
-      a.setAttribute('href', '#'+ roomId)
+      const a = document.createElement('a')
+      a.setAttribute('href', '#' + roomId)
       a.innerText = 'entrar'
 
       item.appendChild(a)
@@ -57,20 +57,20 @@ socket.on('rooms:update', function(rooms) {
   }
 })
 
-socket.on('lobby:join', function(room) {
+socket.on('lobby:join', function (room) {
   hideRooms()
   showLobby()
 })
 
-socket.on('rooms:full', function() {
+socket.on('rooms:full', function () {
   console.log('sala cheia')
 })
 
-roomForm.addEventListener('click', function(e) {
+roomForm.addEventListener('click', function (e) {
   e.preventDefault()
-  let sourceElem = e.target
+  const sourceElem = e.target
 
-  if (sourceElem.nodeName == 'BUTTON') {
+  if (sourceElem.nodeName === 'BUTTON') {
     const qtd = sourceElem.value
     socket.emit('rooms:create', qtd)
     hideRooms()
@@ -79,12 +79,10 @@ roomForm.addEventListener('click', function(e) {
   return false
 })
 
-roomList.addEventListener('click', function(e) {
-  let sourceElem = e.target
+roomList.addEventListener('click', function (e) {
+  const sourceElem = e.target
 
-  if (sourceElem.nodeName == 'A') {
-    socket.emit('rooms:join', roomName)
-  }
+  if (sourceElem.nodeName === 'A') socket.emit('rooms:join', roomName)
 
   return false
 })
@@ -94,12 +92,12 @@ roomList.addEventListener('click', function(e) {
 * */
 
 function hasSeteBelo (hand) {
-  let cardIndex = hand.findIndex(function(c) { return c.Suit == 'diamonds' && c.Value == 7 })
+  const cardIndex = hand.findIndex(function (c) { return c.Suit === 'diamonds' && c.Value === 7 })
   if (cardIndex > -1) return true
   return false
 }
 
-lobbyForm.addEventListener('submit', function(e) {
+lobbyForm.addEventListener('submit', function (e) {
   e.preventDefault()
 
   playerName = lobbyInput.value
@@ -112,19 +110,19 @@ lobbyForm.addEventListener('submit', function(e) {
   return false
 })
 
-socket.on('player:set:id', function(id) {  playerId = id })
+socket.on('player:set:id', function (id) { playerId = id })
 
-socket.on('lobby:update', function(data) {
-  let players = data.players,
-      playingPlayerId = data.playingPlayerId
+socket.on('lobby:update', function (data) {
+  const players = data.players
+  const playingPlayerId = data.playingPlayerId
 
   playerList.innerHTML = ''
 
-  players.forEach(function(player) {
-    let playerItem = document.createElement('li')
-    let handCards = document.createElement('span')
-    let escovas = document.createElement('span')
-    let seteBelo = document.createElement('span')
+  players.forEach(function (player) {
+    const playerItem = document.createElement('li')
+    const handCards = document.createElement('span')
+    const escovas = document.createElement('span')
+    const seteBelo = document.createElement('span')
 
     playerItem.setAttribute('data-player-id', player.playerId)
     playerItem.innerText = player.name
@@ -144,8 +142,7 @@ socket.on('lobby:update', function(data) {
       playerItem.appendChild(seteBelo)
     }
 
-    if (playingPlayerId == player.playerId)
-      playerItem.classList.add('playing_player')
+    if (playingPlayerId === player.playerId) playerItem.classList.add('playing_player')
 
     playerList.appendChild(playerItem)
   })
@@ -158,7 +155,7 @@ socket.on('lobby:update', function(data) {
 * */
 
 function setTableCardsContainer () {
-  tableCardsContainer = container.querySelector('.table_cards')
+  tableCardsContainer = window.gameContainer.querySelector('.table_cards')
 }
 
 function cardContainerContains (card, klass) {
@@ -179,36 +176,33 @@ function isPlayingTable (card) {
 
 function sumCards () {
   totalSum = 0
-  selectedCards = container.querySelectorAll('.card.selected')
+  selectedCards = window.gameContainer.querySelectorAll('.card.selected')
   selectedCards.forEach(function (card) {
     totalSum += parseInt(card.getAttribute('data-value'))
   })
 }
 
 function updateSumCardsOnScreen () {
+  const totalSpan = sumCardsOnScreen.querySelector('span')
   let klass
 
-  if (totalSum == SUM_TO_TAKE_CARDS)
-    klass = 'green'
-  else if (totalSum > 0)
-    klass = 'red'
-  else
-    klass = ''
+  if (totalSum === SUM_TO_TAKE_CARDS) klass = 'green'
+  else if (totalSum > 0) klass = 'red'
+  else klass = ''
 
-  let totalSpan = sumCardsOnScreen.querySelector('span')
   totalSpan.setAttribute('class', klass)
   totalSpan.innerText = totalSum
 }
 
-socket.on('game:start', function(game) {
-  var isPlayingPlayer = !!(game.playingPlayer == playerId)
+socket.on('game:start', function (game) {
+  const isPlayingPlayer = !!(game.playingPlayer === playerId)
   gameRender(game, game.player, isPlayingPlayer)
 })
 
-socket.on('game:render', function(game) {
+socket.on('game:render', function (game) {
   // TODO: find a way to send only the current player
-  var player = game.players.filter(function(p) { return p.playerId === playerId }).pop()
-  var isPlayingPlayer = !!(game.playingPlayer === playerId)
+  const player = game.players.filter(function (p) { return p.playerId === playerId }).pop()
+  const isPlayingPlayer = !!(game.playingPlayer === playerId)
   gameRender(game, player, isPlayingPlayer)
 })
 
@@ -225,13 +219,13 @@ function gameRender (game, player, isPlayingPlayer) {
   setTableCardsContainer()
 }
 
-container.addEventListener('click', function(e) {
-  let sourceElem = e.target
+window.gamecontainer.addEventListener('click', function (e) {
+  const sourceElem = e.target
 
   // Select card from hand
   if (isPlayingHand(sourceElem)) {
     // only allow one card from hand to be selected
-    sourceElem.parentNode.childNodes.forEach(function(li) {
+    sourceElem.parentNode.childNodes.forEach(function (li) {
       li.classList.remove('selected')
     })
     sourceElem.classList.add('selected')
@@ -240,9 +234,8 @@ container.addEventListener('click', function(e) {
   }
 
   // Select cards from table
-  if (isPlayingTable(sourceElem)) {
-    sourceElem.classList.toggle('selected')
-  }
+  if (isPlayingTable(sourceElem)) sourceElem.classList.toggle('selected')
+
 
   // Sum selected cards
   sumCards()
@@ -250,29 +243,25 @@ container.addEventListener('click', function(e) {
 
   enableActions('cancel')
 
-  if (totalSum == 15)
-    enableActions('pick')
-  else
-    disableActions('pick')
+  if (totalSum === 15) enableActions('pick')
+  else disableActions('pick')
 
-  if (totalSum > 0 != 15)
-    enableActions('discard')
-  else
-    disableActions('discard')
+  if (totalSum > 0) enableActions('discard')
+  else disableActions('discard')
 
-  if (totalSum == 0)
-    disableActions('all')
+  if (totalSum === 0) disableActions('all')
 })
 
 actions.addEventListener('click', function (e) {
-  let sourceElem = e.target
+  const sourceElem = e.target
+  const card = window.gameContainer.querySelector('.hand .card.selected')
+  const cards = []
 
-  switch(sourceElem.id) {
+  switch (sourceElem.id) {
     case 'cancel':
-      container.querySelector('.table_cards').classList.remove('playing')
+      window.gameContainer.querySelector('.table_cards').classList.remove('playing')
       break
     case 'discard':
-      let card = container.querySelector('.hand').querySelector('.card.selected')
       socket.emit('game:cards:drop', {
         suit: card.getAttribute('data-suit'),
         value: card.getAttribute('data-value'),
@@ -280,8 +269,7 @@ actions.addEventListener('click', function (e) {
       })
       break
     case 'pick':
-      let cards = new Array()
-      selectedCards.forEach(function(card) {
+      selectedCards.forEach(function (card) {
         cards.push({
           suit: card.getAttribute('data-suit'),
           value: card.getAttribute('data-value'),
@@ -303,8 +291,8 @@ actions.addEventListener('click', function (e) {
 * GAME OVER
 * */
 
-socket.on('log', function(message) {
-  let li = document.createElement('li')
+socket.on('log', function (message) {
+  const li = document.createElement('li')
   li.innerText = message
   logs.querySelector('ul').appendChild(li)
 })
@@ -314,8 +302,8 @@ socket.on('log', function(message) {
 * GAME OVER
 * */
 
-socket.on('game:over', function(players) {
-  let player = players.filter(function(p) { return p.playerId === playerId }).pop()
+socket.on('game:over', function (players) {
+  const player = players.filter(function (p) { return p.playerId === playerId }).pop()
   resetScreen()
   renderPickedCards(player)
 })
@@ -324,22 +312,22 @@ socket.on('game:over', function(players) {
 * DISCONNECTIONS
 * */
 
-socket.on('disconnect', function() {
+socket.on('disconnect', function () {
   console.log('Disconnected')
 })
 
-socket.on('reconnect', function() {
+socket.on('reconnect', function () {
   console.log('Reconnected')
 })
 
-socket.on('reconnect_error', function() {
+socket.on('reconnect_error', function () {
   console.log('Reconnection failed')
 })
 
 /* *** */
 
 function clearSelectedCards () {
-  container.querySelectorAll('.card.selected').forEach(function (card) {
+  window.gameContainer.querySelectorAll('.card.selected').forEach(function (card) {
     card.classList.remove('selected')
   })
 }
@@ -361,21 +349,19 @@ function hideActions () {
 }
 
 function enableActions (id) {
-  if (id == 'all') {
+  if (id === 'all') {
     actions.querySelectorAll('button').forEach(function (action) {
       action.removeAttribute('disabled')
     })
-  } else
-    actions.querySelector('#' + id).removeAttribute('disabled')
+  } else actions.querySelector('#' + id).removeAttribute('disabled')
 }
 
 function disableActions (id) {
-  if (id == 'all') {
+  if (id === 'all') {
     actions.querySelectorAll('button').forEach(function (action) {
       action.setAttribute('disabled', '')
     })
-  } else
-    actions.querySelector('#' + id).setAttribute('disabled', '')
+  } else actions.querySelector('#' + id).setAttribute('disabled', '')
 }
 
 function showLobby () {
@@ -400,7 +386,7 @@ function hideLobbyForm () {
 }
 
 function showBoard () {
-  container.removeAttribute('hidden')
+  window.gameContainer.removeAttribute('hidden')
   cardsPile.removeAttribute('hidden')
   logs.removeAttribute('hidden')
 }
@@ -410,5 +396,5 @@ function load () {
 }
 function ready () {}
 
-window.addEventListener('load', load);
-document.addEventListener('DOMContentLoaded', ready);
+window.addEventListener('load', load)
+document.addEventListener('DOMContentLoaded', ready)

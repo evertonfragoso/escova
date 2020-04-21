@@ -5,14 +5,13 @@ export default class Card {
     this.DisplayValue = value
 
     function getCardValue (value) {
-      switch(value) {
-        case 'A': return 1; break;
-        case 'Q': return 8; break;
-        case 'J': return 9; break;
-        case 'K': return 10; break;
-        default:  return parseInt(value); break;
+      switch (value) {
+        case 'A': return 1
+        case 'Q': return 8
+        case 'J': return 9
+        case 'K': return 10
+        default: return parseInt(value)
       }
     }
   }
 }
-

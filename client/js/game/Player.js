@@ -1,12 +1,12 @@
-import { GenerateRandomId } from '../../../lib/utils.js'
+import { GenerateRandomId } from '../../../lib/utils'
 
 export default class Player {
-  constructor (name = '', hand = new Array()) {
+  constructor (name = '', hand = []) {
     this.playerId = GenerateRandomId()
     this.name = name
     this.hand = hand
 
-    this.pickedCards = new Array()
+    this.pickedCards = []
     this.escovas = 0
     this.lastPicked = false
   }
