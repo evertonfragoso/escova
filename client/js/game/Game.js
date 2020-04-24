@@ -6,7 +6,6 @@ export default class Game {
   constructor (handSize, startTableSize) {
     this.gameDeck = null
     this.deck = null
-    this.table = null
     this.players = null
     this.playingPlayer = null
     this.previousPlayer = null
@@ -15,6 +14,7 @@ export default class Game {
     this.table = []
     this.handSize = handSize
     this.startTableSize = startTableSize
+    this.started = false
   }
 
   startGame () {
@@ -53,11 +53,11 @@ export default class Game {
     let cardTransfer
 
     cards.forEach(card => {
-      cardIndex = this.table.findIndex(c => c.Suit === card.suit && c.Value === card.value)
+      cardIndex = this.table.findIndex(c => c.Suit === card.suit && c.Value === parseInt(card.value))
       if (cardIndex > -1) {
         cardTransfer = this.table.splice(cardIndex, 1)
       } else {
-        cardIndex = this.players[playerIndex].hand.findIndex(c => c.Suit === card.suit && c.Value === card.value)
+        cardIndex = this.players[playerIndex].hand.findIndex(c => c.Suit === card.suit && c.Value === parseInt(card.value))
         cardTransfer = this.players[playerIndex].hand.splice(cardIndex, 1)
       }
       this.players[playerIndex].pickedCards.push(cardTransfer.pop())
@@ -71,7 +71,7 @@ export default class Game {
 
   dropCard (playerId, card) {
     const playerIndex = this.players.findIndex(p => p.playerId === playerId)
-    const cardIndex = this.players[playerIndex].hand.findIndex(c => c.Suit === card.suit && c.Value === card.value)
+    const cardIndex = this.players[playerIndex].hand.findIndex(c => c.Suit === card.suit && c.Value === parseInt(card.value))
     const cardTransfer = this.players[playerIndex].hand.splice(cardIndex, 1).pop()
     this.table.push(cardTransfer)
   }
@@ -106,4 +106,10 @@ export default class Game {
     }
     return playersList[Math.floor(Math.random() * playersList.length)]
   }
+
+  // _getPlayerIndex () {
+  // }
+
+  // _getCardIndex () {
+  // }
 }

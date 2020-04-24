@@ -2,15 +2,9 @@ import path from 'path'
 import http from 'http'
 import SocketIO from 'socket.io'
 import express from 'express'
-
-// For Socket.IO thing
-//
-// import ioClient from 'socket.io-client'
-// const io = ioClient(server)
-
-import Game from './client/js/game/Game.js'
-import Player from './client/js/game/Player.js'
-import { GenerateRandomId, suitPt } from './lib/utils.js'
+import Game from './client/js/game/Game'
+import Player from './client/js/game/Player'
+import { GenerateRandomId, suitPt } from './lib/utils'
 
 const port = process.env.PORT || 3000
 const app = express()
@@ -91,10 +85,16 @@ io.on('connection', socket => {
     updateLobby(room, gameRooms[room].players, 0)
   })
 
+  socket.on('party:swap', () => {
+    const partyId = socket.player.partyId === 'A' ? 'B' : 'A'
+    const playingPlayerId = gameRooms[socket.roomName].playingPlayer
+    socket.player.partyId = partyId
+    updateLobby(socket.roomName, gameRooms[socket.roomName].players, playingPlayerId)
+  })
+
   socket.on('player:add', data => {
     if (addedUser) return
 
-    let playingPlayerId = 0
     const game = gameRooms[data.room]
     const playerName = data.playerName
 
@@ -103,6 +103,7 @@ io.on('connection', socket => {
     logMessage(`Jogador ${playerName} entrou na sala`)
 
     const newPlayer = new Player(playerName)
+    newPlayer.partyId = (game.players.length % 2 === 0) ? 'A' : 'B'
     game.players.push(newPlayer)
     socket.player = newPlayer
     socket.roomId = data.room
@@ -110,22 +111,33 @@ io.on('connection', socket => {
     socket.emit('player:set:id', newPlayer.playerId)
 
     if (game.players.length === maxPlayers) {
-      logMessage('Partida iniciada')
       game.startGame()
-
-      const startData = {
-        table: game.table,
-        deck: game.deck,
-        playingPlayer: game.playingPlayer,
-        player: newPlayer
-      }
-      socket.emit('game:start', startData)
-      socket.broadcast.to(data.room).emit('game:render', game)
-
-      playingPlayerId = game.playingPlayer
+      socket.emit('game:prepare')
+      socket.broadcast.to(socket.roomName).emit('game:prepare')
     }
 
-    updateLobby(data.room, game.players, playingPlayerId)
+    updateLobby(data.room, game.players, 0)
+  })
+
+  socket.on('game:start', () => {
+    const game = gameRooms[socket.roomName]
+
+    if (game.started) return
+
+    game.started = true
+
+    logMessage('Partida iniciada')
+
+    const startData = {
+      table: game.table,
+      deck: game.deck,
+      playingPlayer: game.playingPlayer,
+      player: socket.player
+    }
+    socket.emit('game:start', startData)
+    socket.broadcast.to(socket.roomName).emit('game:render', game)
+
+    updateLobby(socket.roomName, game.players, game.playingPlayer)
   })
 
   socket.on('game:cards:pick', cards => {
@@ -138,6 +150,10 @@ io.on('connection', socket => {
     gameRooms[socket.roomName].dropCard(socket.player.playerId, card)
     playerAction()
     logMessage(`Jogador ${socket.player.name} descartou `, card)
+  })
+
+  socket.on('game:new', () => {
+    // TODO
   })
 
   socket.on('disconnect', () => {

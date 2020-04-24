@@ -20,6 +20,21 @@ const logs = document.querySelector('#log')
 
 const SUM_TO_TAKE_CARDS = 15
 
+const score = {
+  partyA: {
+    escovas: 0,
+    seteBelo: false,
+    highest: false,
+    totalCards: false
+  },
+  partyB: {
+    escovas: 0,
+    seteBelo: false,
+    highest: false,
+    totalCards: false
+  }
+}
+
 let playerId
 let playerName
 let roomId
@@ -37,8 +52,8 @@ socket.on('rooms:update', function (rooms) {
   roomList.innerHTML = ''
 
   for (const room in rooms) {
-    // room format (no quotes): "qtd:[0-9];id:[a-z0-9]{4}"
-    if (room.match(/^qtd:\d;id:[a-z0-9]{4}$/)) {
+    // room format: qtd:X;id:XXXX
+    if (room.match(/^qtd:[24];id:[a-f0-9]{4}$/)) {
       roomName = room
       roomId = room.split(';').pop().split(':').pop()
 
@@ -113,42 +128,87 @@ lobbyForm.addEventListener('submit', function (e) {
 socket.on('player:set:id', function (id) { playerId = id })
 
 socket.on('lobby:update', function (data) {
-  const players = data.players
-  const playingPlayerId = data.playingPlayerId
+  const partyA = document.createElement('li')
+  const partyB = document.createElement('li')
+  const escovasPartyA = document.createElement('span')
+  const escovasPartyB = document.createElement('span')
+
+  score.partyA.escovas = 0
+  score.partyB.escovas = 0
+
+  const seteBelo = document.createElement('span')
+  seteBelo.classList.add('seven_diamonds')
+  seteBelo.innerHTML = '&nbsp;'
+
+  data.players.forEach(function (player) {
+    const playerItem = drawLobbyPlayer(player, data.playingPlayerId)
+    if (player.partyId === 'A') partyA.appendChild(playerItem)
+    else partyB.appendChild(playerItem)
+  })
 
   playerList.innerHTML = ''
+  playerList.append(partyA)
 
-  players.forEach(function (player) {
-    const playerItem = document.createElement('li')
-    const handCards = document.createElement('span')
-    const escovas = document.createElement('span')
-    const seteBelo = document.createElement('span')
+  partyA.classList.add('partyA')
+  partyA.appendChild(escovasPartyA)
+  escovasPartyA.classList.add('escova')
+  escovasPartyA.append(score.partyA.escovas)
 
-    playerItem.setAttribute('data-player-id', player.playerId)
-    playerItem.innerText = player.name
+  if (data.players.length > 1) {
+    partyB.classList.add('partyB')
+    partyB.appendChild(escovasPartyB)
+    escovasPartyB.classList.add('escova')
+    escovasPartyB.append(score.partyB.escovas)
 
-    handCards.classList.add('cards_hand')
-    handCards.innerText = player.hand.length
+    if (data.players.length === 4) playerList.append(partySwapButton())
 
-    escovas.classList.add('escova')
-    escovas.innerText = player.escovas
+    playerList.append(partyB)
+  }
 
-    playerItem.appendChild(handCards)
-    playerItem.appendChild(escovas)
-
-    if (hasSeteBelo(player.pickedCards)) {
-      seteBelo.classList.add('seven_diamonds')
-      seteBelo.innerHTML = '&nbsp;'
-      playerItem.appendChild(seteBelo)
-    }
-
-    if (playingPlayerId === player.playerId) playerItem.classList.add('playing_player')
-
-    playerList.appendChild(playerItem)
-  })
+  if (score.partyA.seteBelo) {
+    partyA.appendChild(seteBelo)
+  } else if (score.partyB.seteBelo) {
+    partyB.appendChild(seteBelo)
+  }
 
   showLobby()
 })
+
+function partySwapButton () {
+  const buttonItem = document.createElement('li')
+  const button = document.createElement('button')
+
+  button.innerHTML = '&harr;'
+  button.addEventListener('click', function () { socket.emit('party:swap') })
+
+  buttonItem.classList.add('swap-party')
+  buttonItem.append(button)
+
+  return buttonItem
+}
+
+function drawLobbyPlayer (player, playingPlayerId) {
+  const playerItem = document.createElement('div')
+  const handCards = document.createElement('span')
+
+  playerItem.setAttribute('data-player-id', player.playerId)
+  playerItem.innerText = player.name
+
+  handCards.classList.add('cards_hand')
+  handCards.innerText = player.hand.length
+
+  playerItem.append(handCards)
+
+  score[`party${player.partyId}`].escovas += player.escovas
+
+  if (hasSeteBelo(player.pickedCards)) {
+    score[`party${player.partyId}`].seteBelo = true
+  }
+
+  if (playingPlayerId === player.playerId) playerItem.classList.add('playing_player')
+
+  return playerItem
+}
 
 /*
 * START GAME
@@ -194,6 +254,11 @@ function updateSumCardsOnScreen () {
   totalSpan.innerText = totalSum
 }
 
+socket.on('game:prepare', function () {
+  hideLobbyForm()
+  showBoard()
+})
+
 socket.on('game:start', function (game) {
   const isPlayingPlayer = !!(game.playingPlayer === playerId)
   gameRender(game, game.player, isPlayingPlayer)
@@ -208,14 +273,14 @@ socket.on('game:render', function (game) {
 
 function gameRender (game, player, isPlayingPlayer) {
   hideLobbyForm()
-  resetScreen()
+  window.resetScreen()
   showSumCards()
   showActions()
   showBoard()
   disableActions('all')
-  renderHand(player, isPlayingPlayer)
-  renderTableCards(game.table, game.deck)
-  renderCardsPile(game.deck)
+  window.renderHand(player, isPlayingPlayer)
+  window.renderTableCards(game.table, game.deck)
+  window.renderCardsPile(game.deck)
   setTableCardsContainer()
 }
 
@@ -235,7 +300,6 @@ window.gameContainer.addEventListener('click', function (e) {
 
   // Select cards from table
   if (isPlayingTable(sourceElem)) sourceElem.classList.toggle('selected')
-
 
   // Sum selected cards
   sumCards()
@@ -278,6 +342,10 @@ actions.addEventListener('click', function (e) {
   disableActions('all')
 })
 
+document.querySelector('button#start').addEventListener('click', function (e) {
+  socket.emit('game:start')
+})
+
 /*
 * GAME OVER
 * */
@@ -288,15 +356,14 @@ socket.on('log', function (message) {
   logs.querySelector('ul').appendChild(li)
 })
 
-
 /*
 * GAME OVER
 * */
 
 socket.on('game:over', function (players) {
   const player = players.filter(function (p) { return p.playerId === playerId }).pop()
-  resetScreen()
-  renderPickedCards(player)
+  window.resetScreen()
+  window.renderPickedCards(player)
 })
 
 /*

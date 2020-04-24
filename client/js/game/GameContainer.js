@@ -14,7 +14,7 @@ window.renderHand = function (player, isStartingPlayer) {
   const hand = document.createElement('div')
   hand.classList.add('hand')
   hand.setAttribute('data-player-id', player.playerId)
-  hand.innerHTML = '<h3>' + player.name + '</h3>'
+  hand.innerHTML = '<h3>Minhas cartas</h3>'
 
   if (isStartingPlayer) {
     hand.classList.add('playing')
@@ -28,7 +28,7 @@ window.renderPlayersHands = function (players) {
   for (const i in players) {
     const hand = document.createElement('div')
     hand.setAttribute('data-player-id', players[i].playerId)
-    hand.innerHTML = '<h3>' + players[i].name + '</h3>'
+    hand.innerHTML = '<h3>Minhas cartas</h3>'
 
     _cardList(hand, players[i].hand)
     _append(hand, container)
@@ -60,12 +60,14 @@ window.renderPickedCards = function (player) {
   const pickedCards = document.createElement('div')
   pickedCards.classList.add('hand')
   pickedCards.setAttribute('data-player-id', player.playerId)
-  pickedCards.innerHTML = '<h3>' + player.name + '</h3>'
+  pickedCards.innerHTML = '<h3>' + player.name + ': ' + player.pickedCards.length + ' cartas</h3>'
+
+  _append(_totalPerSuit(player.pickedCards), pickedCards)
 
   // order by number first...
-  const sortedCards = player.pickedCards.sort((a, b) => a.Value - b.Value)
+  const sortedCards = player.pickedCards.sort(function (a, b) { return a.Value - b.Value })
   // then by suit
-  sortedCards.sort((a, b) => {
+  sortedCards.sort(function (a, b) {
     if (a.Suit < b.Suit) return -1
     if (a.Suit > b.Suit) return 1
 
@@ -107,4 +109,28 @@ function _cardStructure (card) {
   cardItem.setAttribute('data-display-value', card.DisplayValue)
 
   return cardItem
+}
+
+function _totalPerSuit (cards) {
+  const suits = ['spades', 'clubs', 'hearts', 'diams']
+  const list = document.createElement('ul')
+  list.classList.add('totals')
+
+  const totals = { clubs: 0, diams: 0, hearts: 0, spades: 0 }
+
+  for (let i = 0; i < cards.length; i++) {
+    if (cards[i].Suit.toLowerCase() === 'diamonds') {
+      totals.diams++
+      continue
+    }
+    totals[cards[i].Suit]++
+  }
+
+  for (let i = 0; i < suits.length; i++) {
+    const item = document.createElement('li')
+    item.innerHTML = '&' + suits[i] + '; ' + totals[suits[i]]
+    _append(item, list)
+  }
+
+  return list
 }
