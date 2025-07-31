@@ -1,32 +1,37 @@
 {
-  "name": "escova-server",
-  "version": "1.0.0",
-  "description": "Jogo de escova (escopa ou escoba) feito em JS",
-  "main": "index.js",
+  "name": "escopa-game-server",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "npx babel-node index.js --exec babel-node --presets babel-preset-env",
-    "nodemon": "nodemon index.js --exec babel-node --presets babel-preset-env",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/server.ts",
+    "dev": "tsx watch --clear-screen=false src/server.ts",
+    "lint": "eslint 'src/**/*.ts'",
+    "build": "tsc"
   },
-  "repository": "git@github.com:evertonfragoso/escova.git",
-  "author": "Everton Fragoso <everton.lfragoso@gmail.com>",
-  "license": "MIT",
   "dependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-loader": "^8.1.0",
-    "babel-preset-env": "^1.7.0",
-    "express": "^4.17.1",
-    "path": "^0.12.7",
-    "socket.io": "^2.3.0"
+    "@colyseus/core": "^0.16.19",
+    "@colyseus/redis-driver": "^0.16.1",
+    "@colyseus/redis-presence": "^0.16.4",
+    "@colyseus/schema": "^3.0.42",
+    "@colyseus/ws-transport": "^0.16.5",
+    "colyseus": "^0.16.4",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "nodemon": "^2.0.2"
-  }
+    "@eslint/js": "^9.30.1",
+    "@types/cors": "^2",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.12",
+    "eslint": "^9.30.1",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.36.0"
+  },
+  "packageManager": "yarn@4.9.2"
 }

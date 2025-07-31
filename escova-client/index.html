@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/vite.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escova</title>
+      <style>
+      .card {
+        display: inline-block;
+        padding: 8px;
+        margin: 4px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-family: sans-serif;
+        background: #f9f9f9;
+      }
+      .card.swords { background-color: #e0f7fa; }
+      .card.cups { background-color: #fce4ec; }
+      .card.coins { background-color: #fff3e0; }
+      .card.clubs { background-color: #e8f5e9; }
+    </style>
+  </head>
+  <body>
+    <h1>Escopa Test Client</h1>
+    <p id="status">Connecting...</p>
+
+    <h2>Hand</h2>
+    <div id="hand"></div>
+
+    <h2>Table</h2>
+    <div id="table"></div>
+
+    <pre id="logs"></pre>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

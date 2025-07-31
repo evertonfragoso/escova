@@ -1,0 +1,87 @@
+import * as Colyseus from "colyseus.js"
+
+const client = new Colyseus.Client("ws://localhost:3000")
+
+// HTML targets
+const statusDiv = document.getElementById("status")!
+const tableDiv = document.getElementById("table")!
+const handDiv = document.getElementById("hand")!
+const logsDiv = document.getElementById("logs")!
+
+function renderCard(card: any, elementId: any): HTMLElement {
+  const el = document.createElement("div")
+  el.className = `card ${card.suit}`
+  el.id = elementId
+  el.textContent = `${card.value} of ${card.suit}`
+  return el
+}
+
+async function main() {
+  try {
+    const room = await client.joinOrCreate("escopa")
+
+    statusDiv.textContent = `Connected as ${room.sessionId}`
+
+    console.log(`Connected as ${room.sessionId}`)
+
+    room.onStateChange.once((state) => {
+      console.log("Initial state received:", state)
+
+      // Render table cards
+      state.table.items.forEach((card, key) => {
+        console.log("Initial table card:", card)
+        const el = renderCard(card, `table-${key}`)
+        tableDiv.appendChild(el)
+      })
+
+      state.table.onAdd = (card, key) => {
+        console.log("Table card added:", card)
+        const el = renderCard(card, `table-${key}`)
+        tableDiv.appendChild(el)
+      }
+
+      state.table.onRemove = (_, key) => {
+        const el = document.getElementById(`table-${key}`)
+        if (el) el.remove()
+      }
+
+      // Render your own hand
+      const me = state.players.get(room.sessionId)
+      if (!me) {
+        console.warn("Could not find my player state")
+        return
+      }
+
+      me.hand.forEach((card, key) => {
+        console.log("Initial hand card:", card)
+        const el = renderCard(card, `hand-${key}`)
+        handDiv.appendChild(el)
+      })
+
+      me.hand.onAdd = (card, key) => {
+        console.log("Card added to my hand:", card)
+        const el = renderCard(card, `hand-${key}`)
+        handDiv.appendChild(el)
+      }
+
+      me.hand.onRemove = (_, key) => {
+        const el = document.getElementById(`hand-${key}`)
+        if (el) el.remove()
+      }
+
+      console.log("table:", state.table)
+      console.log("my hand:", me.hand)
+    })
+
+    // Listen for server messages
+    room.onMessage("*", (type, message) => {
+      console.log("Received message:", type, message)
+      logsDiv.textContent = `${logsDiv.textContent}\n${type}: ${message.message}`
+    })
+
+  } catch (err) {
+    console.error("Failed to connect:", err)
+  }
+}
+
+main()
