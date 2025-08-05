@@ -1,4 +1,4 @@
-const socket = io()
+const socket = await io()
 
 window.gameContainer = document.querySelector('#game')
 window.gameCardsPile = document.querySelector('#cards_pile > div')
@@ -38,33 +38,35 @@ const score = {
 let playerId
 let playerName
 let roomId
-let roomName
 let tableCardsContainer
 let selectedCards
 let totalSum
 let connected = false
+
+// roomName format: qtd:X;id:00000000-0000-0000-0000-000000000000
+// let roomNameRegEx = /^qtd:[24];id:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+let uuidRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 /*
 * ROOMS
 * */
 // list rooms
 socket.on('rooms:update', function (rooms) {
+  console.log('rooms:update')
   roomList.innerHTML = ''
 
-  for (const room in rooms) {
-    // room format: qtd:X;id:XXXX
-    if (room.match(/^qtd:[24];id:[a-f0-9]{4}$/)) {
-      roomName = room
-      roomId = room.split(';').pop().split(':').pop()
+  for (let [key, _value] of Object.entries(rooms)) {
+    if (rooms[key].roomId.match(uuidRegEx)) {
+      roomId = rooms[key].roomId
 
-      const roomQtd = room.split(';').shift().split(':').pop()
+      const maxPlayers = rooms[key].maxPlayers
 
       const item = document.createElement('li')
-      item.innerText = roomQtd + ' jogadores '
+      item.innerText = maxPlayers + ' players '
 
       const a = document.createElement('a')
       a.setAttribute('href', '#' + roomId)
-      a.innerText = 'entrar'
+      a.innerText = 'enter'
 
       item.appendChild(a)
       roomList.appendChild(item)
@@ -73,12 +75,13 @@ socket.on('rooms:update', function (rooms) {
 })
 
 socket.on('lobby:join', function (room) {
+  console.log('lobby:join')
   hideRooms()
   showLobby()
 })
 
 socket.on('rooms:full', function () {
-  console.log('sala cheia')
+  console.log('full room')
 })
 
 roomForm.addEventListener('click', function (e) {
@@ -86,6 +89,7 @@ roomForm.addEventListener('click', function (e) {
   const sourceElem = e.target
 
   if (sourceElem.nodeName === 'BUTTON') {
+    console.log('rooms:create')
     const qtd = sourceElem.value
     socket.emit('rooms:create', qtd)
     hideRooms()
@@ -97,7 +101,10 @@ roomForm.addEventListener('click', function (e) {
 roomList.addEventListener('click', function (e) {
   const sourceElem = e.target
 
-  if (sourceElem.nodeName === 'A') socket.emit('rooms:join', roomName)
+  if (sourceElem.nodeName === 'A') {
+    console.log('rooms:join')
+    socket.emit('rooms:join', roomId)
+  }
 
   return false
 })
@@ -113,10 +120,11 @@ function hasSeteBelo (hand) {
 }
 
 lobbyForm.addEventListener('submit', function (e) {
+  console.log('player:add')
   e.preventDefault()
 
   playerName = lobbyInput.value
-  socket.emit('player:add', { playerName: playerName, room: roomName })
+  socket.emit('player:add', { playerName: playerName, roomId: roomId })
 
   lobbyInput.value = ''
   hideLobby()
@@ -125,9 +133,14 @@ lobbyForm.addEventListener('submit', function (e) {
   return false
 })
 
-socket.on('player:set:id', function (id) { playerId = id })
+socket.on('player:set:id', function (id) {
+  console.log('player:set:id')
+  playerId = id
+})
 
 socket.on('lobby:update', function (data) {
+  console.log('lobby:update')
+
   const partyA = document.createElement('li')
   const partyB = document.createElement('li')
   const escovasPartyA = document.createElement('span')
@@ -179,7 +192,10 @@ function partySwapButton () {
   const button = document.createElement('button')
 
   button.innerHTML = '&harr;'
-  button.addEventListener('click', function () { socket.emit('party:swap') })
+  button.addEventListener('click', function () {
+    console.log('party:swap')
+    socket.emit('party:swap')
+  })
 
   buttonItem.classList.add('swap-party')
   buttonItem.append(button)
@@ -255,16 +271,19 @@ function updateSumCardsOnScreen () {
 }
 
 socket.on('game:prepare', function () {
+  console.log('game:prepare')
   hideLobbyForm()
   showBoard()
 })
 
 socket.on('game:start', function (game) {
+  console.log('game:start')
   const isPlayingPlayer = !!(game.playingPlayer === playerId)
   gameRender(game, game.player, isPlayingPlayer)
 })
 
 socket.on('game:render', function (game) {
+  console.log('game:render')
   // TODO: find a way to send only the current player
   const player = game.players.filter(function (p) { return p.playerId === playerId }).pop()
   const isPlayingPlayer = !!(game.playingPlayer === playerId)
@@ -320,6 +339,7 @@ actions.addEventListener('click', function (e) {
   const cards = []
 
   if (sourceElem.id === 'discard') {
+    console.log('game:cards:drop')
     socket.emit('game:cards:drop', {
       suit: card.getAttribute('data-suit'),
       value: card.getAttribute('data-value'),
@@ -333,6 +353,7 @@ actions.addEventListener('click', function (e) {
         displayValue: card.getAttribute('data-display-value')
       })
     })
+    console.log('game:cards:pick')
     socket.emit('game:cards:pick', cards)
   }
 
@@ -343,6 +364,7 @@ actions.addEventListener('click', function (e) {
 })
 
 document.querySelector('button#start').addEventListener('click', function (e) {
+  console.log('game:start')
   socket.emit('game:start')
 })
 
@@ -351,6 +373,7 @@ document.querySelector('button#start').addEventListener('click', function (e) {
 * */
 
 socket.on('log', function (message) {
+  console.log('log')
   const li = document.createElement('li')
   li.innerText = message
   logs.querySelector('ul').appendChild(li)
@@ -361,6 +384,7 @@ socket.on('log', function (message) {
 * */
 
 socket.on('game:over', function (players) {
+  console.log('game:over')
   const player = players.filter(function (p) { return p.playerId === playerId }).pop()
   window.resetScreen()
   window.renderPickedCards(player)
