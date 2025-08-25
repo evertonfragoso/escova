@@ -1,0 +1,17 @@
+{
+    "pt-BR": {
+        "suits": {
+            "clubs": "paus",
+            "diamonds": "ouro",
+            "hearts": "corações",
+            "spades": "espadas"
+        },
+        "room": {
+            "created": "Sala criada (%{numberOfPlayers} jogadores)"
+        },
+        "player": {
+            "joined": "Um jogador se uniu à sala"
+        },
+        "of": "de"
+    }
+}

@@ -7,8 +7,11 @@ export default class GameRooms {
         this.rooms = {}
     }
 
+    /**
+     * @param {number} numberOfPlayers
+     */
     create(numberOfPlayers) {
-        const room = new Room(parseInt(numberOfPlayers))
+        const room = new Room(numberOfPlayers)
         this.rooms[room.roomId] = room
 
         this.socket.room = room
@@ -17,6 +20,9 @@ export default class GameRooms {
         return room
     }
 
+    /**
+     * @param {string | number} roomId
+     */
     join(roomId) {
         const room = this.rooms[roomId]
 

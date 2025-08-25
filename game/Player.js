@@ -1,4 +1,7 @@
 export default class Player {
+    /**
+     * @param {string} name
+     */
     constructor (name = '') {
         this.playerId = crypto.randomUUID()
         this.name = name

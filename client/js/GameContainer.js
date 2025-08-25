@@ -21,7 +21,7 @@ window.renderHand = function (player, isStartingPlayer) {
   }
 
   _cardList(hand, player.hand)
-  _append(hand, container)
+  container.appendChild(hand)
 }
 
 window.renderPlayersHands = function (players) {
@@ -31,7 +31,7 @@ window.renderPlayersHands = function (players) {
     hand.innerHTML = '<h3>Minhas cartas</h3>'
 
     _cardList(hand, players[i].hand)
-    _append(hand, container)
+    container.appendChild(hand)
   }
 }
 
@@ -42,7 +42,7 @@ window.renderTableCards = function (tableCards, deck) {
   table.innerHTML = '<h3>Mesa:</h3>'
 
   _cardList(table, tableCards)
-  _append(table, container)
+  container.appendChild(table)
 }
 
 window.renderCardsPile = function (deck) {
@@ -52,7 +52,7 @@ window.renderCardsPile = function (deck) {
     const c = document.createElement('div')
     c.classList.add('card', 'back')
     c.setAttribute('style', 'border: 1px solid grey; margin-left: ' + i + 'px; margin-top: ' + i + 'px;')
-    _append(c, cardsPile)
+    cardsPile.appendChild(c)
   }
 }
 
@@ -62,7 +62,7 @@ window.renderPickedCards = function (player) {
   pickedCards.setAttribute('data-player-id', player.playerId)
   pickedCards.innerHTML = '<h3>' + player.name + ': ' + player.pickedCards.length + ' cartas</h3>'
 
-  _append(_totalPerSuit(player.pickedCards), pickedCards)
+  pickedCards.appendChild(_totalPerSuit(player.pickedCards))
 
   // order by number first...
   const sortedCards = player.pickedCards.sort(function (a, b) { return a.Value - b.Value })
@@ -75,24 +75,20 @@ window.renderPickedCards = function (player) {
   })
 
   _cardList(pickedCards, sortedCards)
-  _append(pickedCards, container)
+  container.appendChild(pickedCards)
 }
 
 // should be private
-
-function _append (child, container) {
-  container.appendChild(child)
-}
 
 function _cardList (container, cards) {
   const list = document.createElement('ul')
 
   for (let i = 0; i < cards.length; i++) {
     const cardItem = _cardStructure(cards[i])
-    _append(cardItem, list)
+    list.appendChild(cardItem)
   }
 
-  _append(list, container)
+  container.appendChild(list)
 }
 
 function _cardStructure (card) {
@@ -129,7 +125,7 @@ function _totalPerSuit (cards) {
   for (let i = 0; i < suits.length; i++) {
     const item = document.createElement('li')
     item.innerHTML = '&' + suits[i] + '; ' + totals[suits[i]]
-    _append(item, list)
+    list.appendChild(item)
   }
 
   return list

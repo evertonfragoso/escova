@@ -37,7 +37,7 @@ export default class Connection {
         this.io.sockets.emit(event, message)
     }
 
-    getRooms() {
+    async getRooms() {
         return this.io.sockets.adapter.rooms
     }
 }

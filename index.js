@@ -6,9 +6,12 @@ import Main from '#server/Main.js'
 const port = process.env.PORT || 3000
 
 const app = express()
+app.use(express.static('client'))
 const httpServer = createServer(app)
 
 /*
+// TODO: persist games
+
 import sqlite3 from 'sqlite3'
 import { open } from 'sqlite'
 
@@ -24,8 +27,6 @@ await db.exec(`
   );
 `);
 */
-
-app.use(express.static('client'))
 
 const game = new Main(httpServer)
 game.start()

@@ -1,0 +1,17 @@
+{
+    "en": {
+        "suits": {
+            "clubs": "clubs",
+            "diamonds": "diamonds",
+            "hearts": "hearts",
+            "spades": "spades"
+        },
+        "room": {
+            "created": "Room created (%{numberOfPlayers} players)"
+        },
+        "player": {
+            "joined": "A player joined room"
+        },
+        "of": "of"
+    }
+}

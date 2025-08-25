@@ -373,7 +373,7 @@ document.querySelector('button#start').addEventListener('click', function (e) {
 * */
 
 socket.on('log', function (message) {
-  console.log('log')
+  console.log('log:', message)
   const li = document.createElement('li')
   li.innerText = message
   logs.querySelector('ul').appendChild(li)
