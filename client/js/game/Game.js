@@ -1,4 +1,4 @@
-import Deck from './Deck'
+import Deck from './Deck.js'
 
 const reducer = (accumulator, currentValue) => accumulator + currentValue
 

@@ -1,4 +1,4 @@
-import { GenerateRandomId } from '../../../lib/utils'
+import { GenerateRandomId } from '../../../lib/utils.js'
 
 export default class Player {
   constructor (name = '') {
