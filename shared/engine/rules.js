@@ -10,7 +10,6 @@ export function isValidCapture (playedCard, tableCards) {
 }
 
 // Escova = the player clears the entire table with a capture.
-// Scoring rules for escova come later; detection is here.
 export function isEscova (tableBeforeCapture, capturedTableCards) {
   return tableBeforeCapture.length > 0 &&
     tableBeforeCapture.length === capturedTableCards.length
