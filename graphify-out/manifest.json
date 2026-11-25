@@ -1,0 +1,74 @@
+{
+  ".eslintrc.yml": {
+    "mtime": 1764721551.2780683,
+    "seen": 1795585895.0675442,
+    "ast_hash": "14cc71392a2e95d9960f986adc2d0250",
+    "semantic_hash": "14cc71392a2e95d9960f986adc2d0250"
+  },
+  "client/js/game/Card.js": {
+    "mtime": 1795585122.613,
+    "seen": 1795585895.0675726,
+    "ast_hash": "78ed94a8ff09d39e621d89187f26b999",
+    "semantic_hash": "78ed94a8ff09d39e621d89187f26b999"
+  },
+  "client/js/game/Deck.js": {
+    "mtime": 1795585122.6146383,
+    "seen": 1795585895.067586,
+    "ast_hash": "d1972e47cd65bfa5fe29097c9ff9bdbb",
+    "semantic_hash": "d1972e47cd65bfa5fe29097c9ff9bdbb"
+  },
+  "client/js/game/Game.js": {
+    "mtime": 1795585122.6146383,
+    "seen": 1795585895.067596,
+    "ast_hash": "f4a135d853b4348a043d5b7fa4dc4bf4",
+    "semantic_hash": "f4a135d853b4348a043d5b7fa4dc4bf4"
+  },
+  "client/js/game/GameContainer.js": {
+    "mtime": 1795585122.6146383,
+    "seen": 1795585895.0676053,
+    "ast_hash": "a69975f52cf714fb1cb27ca7fc9f186d",
+    "semantic_hash": "a69975f52cf714fb1cb27ca7fc9f186d"
+  },
+  "client/js/game/Player.js": {
+    "mtime": 1795585122.6149998,
+    "seen": 1795585895.0676131,
+    "ast_hash": "1c626273da21a5814ae41206b6f57ad3",
+    "semantic_hash": "1c626273da21a5814ae41206b6f57ad3"
+  },
+  "client/js/lobby.js": {
+    "mtime": 1795585122.6162932,
+    "seen": 1795585895.0676222,
+    "ast_hash": "d19fa9433a83afd75a95e24f2078038b",
+    "semantic_hash": "d19fa9433a83afd75a95e24f2078038b"
+  },
+  "index.js": {
+    "mtime": 1795585122.6168697,
+    "seen": 1795585895.0676303,
+    "ast_hash": "e3e0faede469421f212d2aeea06b6818",
+    "semantic_hash": "e3e0faede469421f212d2aeea06b6818"
+  },
+  "lib/utils.js": {
+    "mtime": 1795585122.6168697,
+    "seen": 1795585895.067638,
+    "ast_hash": "f5c33d356ed245810cf7dd87bc257273",
+    "semantic_hash": "f5c33d356ed245810cf7dd87bc257273"
+  },
+  "package.json": {
+    "mtime": 1795585122.6175387,
+    "seen": 1795585895.0676455,
+    "ast_hash": "598f65eb43b0016ca211a591167995e3",
+    "semantic_hash": "598f65eb43b0016ca211a591167995e3"
+  },
+  "client/index.html": {
+    "mtime": 1795585122.6122296,
+    "seen": 1795585895.067653,
+    "ast_hash": "d8c8122af9250079d54738c8cd5d7c8b",
+    "semantic_hash": "d8c8122af9250079d54738c8cd5d7c8b"
+  },
+  "client/images/7belo.png": {
+    "mtime": 1764720947.2730794,
+    "seen": 1795585895.0676625,
+    "ast_hash": "e4b537ef19f115a471c28973348d802e",
+    "semantic_hash": "e4b537ef19f115a471c28973348d802e"
+  }
+}
