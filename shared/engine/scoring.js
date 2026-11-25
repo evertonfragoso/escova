@@ -1,7 +1,4 @@
-import { SUITS } from './Card.js'
-
-// "Primeira" value per rank: the highest-seven ranking
-export const PRIMEIRA_VALUE = Object.freeze({ 7: 21, 6: 18, A: 16, 5: 15, 4: 14, 3: 13, 2: 12, Q: 10, J: 10, K: 10 })
+import { SUITS, SUIT, PRIMEIRA_VALUE } from '../constants.js'
 
 const mapTeams = (teams, fn) => Object.fromEntries(teams.map(t => [t, fn(t)]))
 
@@ -36,7 +33,7 @@ export function scoreRound (results) {
   award('cards', leader(mapTeams(teams, t => results[t].captured.length)))
 
   award('diamonds', leader(mapTeams(teams, t =>
-    results[t].captured.filter(c => c.suit === 'diamonds').length
+    results[t].captured.filter(c => c.suit === SUIT.DIAMONDS).length
   )))
 
   award('seteBelo', teams.find(t => results[t].captured.some(c => c.isSeteBelo())) ?? null)

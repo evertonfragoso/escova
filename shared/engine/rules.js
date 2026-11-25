@@ -1,4 +1,4 @@
-export const TAKE_SUM = 15
+import { TAKE_SUM } from '../constants.js'
 
 export const sumValues = cards => cards.reduce((total, c) => total + c.value, 0)
 

@@ -1,6 +1,5 @@
-import Card, { SUITS } from './Card.js'
-
-const RANKS = Object.freeze(['A', '2', '3', '4', '5', '6', '7', 'Q', 'J', 'K'])
+import Card from './Card.js'
+import { SUITS, RANKS } from '../constants.js'
 
 export default class Deck {
   // rng is injectable so tests can pass a seeded generator

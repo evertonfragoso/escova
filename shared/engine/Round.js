@@ -1,15 +1,12 @@
 import Deck from './Deck.js'
-import { isValidCapture, isEscova, TAKE_SUM } from './rules.js'
-
-export const HAND_SIZE = 3
-export const START_TABLE_SIZE = 4
-export const VALID_PLAYER_COUNTS = Object.freeze([2, 4])
+import { isValidCapture, isEscova } from './rules.js'
+import { HAND_SIZE, START_TABLE_SIZE, PLAYER_COUNTS, TAKE_SUM } from '../constants.js'
 
 export default class Round {
   // players: array of Player, already ordered by seat
   // deck: optional Deck, defaults to a fresh shuffled deck
   constructor (players, { deck = null, startingIndex = 0, handSize = HAND_SIZE, startTableSize = START_TABLE_SIZE } = {}) {
-    if (!VALID_PLAYER_COUNTS.includes(players.length)) throw new Error('A round needs 2 or 4 players')
+    if (!PLAYER_COUNTS.includes(players.length)) throw new Error(`A round needs ${PLAYER_COUNTS.join(' or ')} players`)
 
     this.players = players
     this.deck = deck ?? new Deck().shuffle()

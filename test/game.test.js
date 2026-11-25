@@ -6,6 +6,7 @@ import Player from '../shared/engine/Player.js'
 import Round from '../shared/engine/Round.js'
 import Game from '../shared/engine/Game.js'
 import { isValidCapture } from '../shared/engine/rules.js'
+import { PLAYER_COUNTS } from '../shared/constants.js'
 
 const seeded = seed => () => {
   seed = (seed * 16807) % 2147483647
@@ -41,6 +42,18 @@ function findMove (round) {
   }
   return [p.hand[0].id, []]
 }
+
+describe('Round captures with many table cards', () => {
+  test('capture of 4 aces and a 3 plus a played 8 sums to 15 (5 cards)', () => {
+    const round = scripted({
+      hands: [[c('Q', 'clubs')], []],
+      table: [c('A', 'clubs'), c('A', 'hearts'), c('A', 'spades'), c('A', 'diamonds'), c('3', 'clubs')]
+    })
+    round.play('p0', 'Q-clubs', ['A-clubs', 'A-hearts', 'A-spades', 'A-diamonds', '3-clubs'])
+    assert.equal(round.players[0].captured.length, 6)
+    assert.equal(round.table.length, 0)
+  })
+})
 
 describe('Game setup', () => {
   test('rejects 3 players', () => {
@@ -82,7 +95,7 @@ describe('Game setup', () => {
 })
 
 describe('Game flow', () => {
-  for (const count of [2, 4]) {
+  for (const count of PLAYER_COUNTS) {
     test(`simulated ${count}-player game terminates with a winner`, () => {
       const players = Array.from({ length: count }, (_, i) => new Player(`p${i}`, `P${i}`))
       const game = new Game(players, { rng: seeded(count * 99) })

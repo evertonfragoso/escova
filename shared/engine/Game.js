@@ -1,14 +1,11 @@
 import Deck from './Deck.js'
 import Round from './Round.js'
 import { scoreRound } from './scoring.js'
-
-export const TARGET_SCORE = 11
-export const TEAMS = Object.freeze(['A', 'B'])
-export const VALID_PLAYER_COUNTS = Object.freeze([2, 4])
+import { TARGET_SCORE, TEAMS, PLAYER_COUNTS } from '../constants.js'
 
 export default class Game {
   constructor (players, { targetScore = TARGET_SCORE, rng = Math.random, startingIndex = 0 } = {}) {
-    if (!VALID_PLAYER_COUNTS.includes(players.length)) throw new Error('A game needs 2 or 4 players')
+    if (!PLAYER_COUNTS.includes(players.length)) throw new Error(`A game needs ${PLAYER_COUNTS.join(' or ')} players`)
 
     // Seats alternate teams, so players across the table share a team
     players.forEach((p, i) => { p.team = TEAMS[i % 2] })

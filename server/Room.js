@@ -1,11 +1,10 @@
 import Game from '../shared/engine/Game.js'
 import Player from '../shared/engine/Player.js'
-
-export const ROOM_CAPACITIES = Object.freeze([2, 4])
+import { PLAYER_COUNTS } from '../shared/constants.js'
 
 export default class Room {
   constructor (id, capacity, { rng = Math.random } = {}) {
-    if (!ROOM_CAPACITIES.includes(capacity)) throw new Error('Room capacity must be 2 or 4')
+    if (!PLAYER_COUNTS.includes(capacity)) throw new Error(`Room capacity must be ${PLAYER_COUNTS.join(' or ')}`)
     this.id = id
     this.capacity = capacity
     this.rng = rng
@@ -35,7 +34,8 @@ export default class Room {
   }
 
   leave (playerId) {
-    // TODO: Mid-game disconnects; only lobby leaves are handled here at the moment
+    // Only lobby leaves are handled. TODO: on a mid-game disconnect, keep the seat
+    // and let the same player reconnect, instead of blocking the game
     if (this.started) return false
     this.players = this.players.filter(p => p.id !== playerId)
     return true

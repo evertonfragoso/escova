@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PLAYER_COUNTS, DECK_SIZE } from './constants.js'
 
 // Single source of truth for event names, shared by server and client
 export const EVENTS = Object.freeze({
@@ -10,7 +11,7 @@ export const EVENTS = Object.freeze({
 })
 
 export const createRoomSchema = z.object({
-  capacity: z.union([z.literal(2), z.literal(4)])
+  capacity: z.union(PLAYER_COUNTS.map(n => z.literal(n)))
 })
 
 export const joinRoomSchema = z.object({
@@ -20,5 +21,5 @@ export const joinRoomSchema = z.object({
 
 export const playSchema = z.object({
   cardId: z.string().min(1),
-  tableCardIds: z.array(z.string().min(1)).max(3).default([])
+  tableCardIds: z.array(z.string().min(1)).max(DECK_SIZE).default([])
 })
