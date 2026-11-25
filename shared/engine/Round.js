@@ -3,12 +3,13 @@ import { isValidCapture, isEscova, TAKE_SUM } from './rules.js'
 
 export const HAND_SIZE = 3
 export const START_TABLE_SIZE = 4
+export const VALID_PLAYER_COUNTS = Object.freeze([2, 4])
 
 export default class Round {
   // players: array of Player, already ordered by seat
   // deck: optional Deck, defaults to a fresh shuffled deck
   constructor (players, { deck = null, startingIndex = 0, handSize = HAND_SIZE, startTableSize = START_TABLE_SIZE } = {}) {
-    if (players.length < 2) throw new Error('A round needs at least 2 players')
+    if (!VALID_PLAYER_COUNTS.includes(players.length)) throw new Error('A round needs 2 or 4 players')
 
     this.players = players
     this.deck = deck ?? new Deck().shuffle()
@@ -58,9 +59,7 @@ export default class Round {
     this._assertTurn(playerId)
 
     const player = this.currentPlayer
-    const playedCard = player.hand.find(c => c.id === cardId)
-
-    if (!playedCard) throw new Error(`Card ${cardId} not in hand`)
+    if (!player.hasCard(cardId)) throw new Error(`Card ${cardId} not in hand`)
 
     if (tableCardIds.length === 0) this._discard(player, cardId)
     else this._capture(player, cardId, tableCardIds)
