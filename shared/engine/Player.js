@@ -1,9 +1,16 @@
 export default class Player {
-  constructor (id, name, team) {
+  constructor (id, name, team = null) {
     if (!id) throw new Error('Player id is required')
     this.id = id
     this.name = name
     this.team = team
+    this.hand = []
+    this.captured = []
+    this.escovas = 0
+  }
+
+  // Clears round state; team, id and name persist across rounds
+  reset () {
     this.hand = []
     this.captured = []
     this.escovas = 0
