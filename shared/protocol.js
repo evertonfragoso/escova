@@ -5,6 +5,7 @@ import { PLAYER_COUNTS, DECK_SIZE } from './constants.js'
 export const EVENTS = Object.freeze({
   ROOM_CREATE: 'room:create',
   ROOM_JOIN: 'room:join',
+  ROOM_RECONNECT: 'room:reconnect',
   ROOM_STATE: 'room:state',
   GAME_PLAY: 'game:play',
   ROUND_OVER: 'round:over'
@@ -17,6 +18,12 @@ export const createRoomSchema = z.object({
 export const joinRoomSchema = z.object({
   roomId: z.string().min(1),
   name: z.string().trim().min(1).max(20)
+})
+
+// token is the secret issued at join; it is never sent to other players
+export const reconnectSchema = z.object({
+  roomId: z.string().min(1),
+  token: z.string().min(1)
 })
 
 export const playSchema = z.object({

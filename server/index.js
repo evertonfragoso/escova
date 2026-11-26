@@ -4,7 +4,7 @@ import express from 'express'
 import { Server } from 'socket.io'
 import RoomManager from './RoomManager.js'
 import {
-  EVENTS, createRoomSchema, joinRoomSchema, playSchema
+  EVENTS, createRoomSchema, joinRoomSchema, reconnectSchema, playSchema
 } from '../shared/protocol.js'
 
 // Runs one handler: validates payload, calls fn, always answers the ack
@@ -26,11 +26,26 @@ export function createServer ({ rooms = new RoomManager() } = {}) {
   const server = http.createServer(app)
   const io = new Server(server)
 
-  // Each player gets their own view, so hands never leak to other sockets
+  // Each connected seat gets its own view, so hands never leak to other sockets
   function broadcastState (room) {
     for (const player of room.players) {
-      io.to(player.id).emit(EVENTS.ROOM_STATE, room.stateFor(player.id))
+      const socketId = room.socketIdOf(player.id)
+      if (socketId) io.to(socketId).emit(EVENTS.ROOM_STATE, room.stateFor(player.id))
     }
+  }
+
+  // The socket's seat in its room, or an error if it has none
+  function session (socket) {
+    if (!socket.data.roomId) throw new Error('Not in a room')
+    return { room: rooms.get(socket.data.roomId), seatId: socket.data.seatId }
+  }
+
+  function bindSocket (socket, room, seatId) {
+    socket.data.roomId = room.id
+    socket.data.seatId = seatId
+    socket.join(room.id)
+    rooms.refresh(room)
+    broadcastState(room)
   }
 
   io.on('connection', socket => {
@@ -42,27 +57,38 @@ export function createServer ({ rooms = new RoomManager() } = {}) {
     socket.on(EVENTS.ROOM_JOIN, handler(joinRoomSchema, ({ roomId, name }) => {
       if (socket.data.roomId) throw new Error('Already in a room')
       const room = rooms.get(roomId)
-      room.join(socket.id, name)
-      socket.data.roomId = roomId
-      socket.join(roomId)
-      broadcastState(room)
-      return { started: room.started }
+      const { seatId, token } = room.join(name, socket.id)
+      bindSocket(socket, room, seatId)
+      return { playerId: token, seatId, started: room.started }
+    }))
+
+    socket.on(EVENTS.ROOM_RECONNECT, handler(reconnectSchema, ({ roomId, token }) => {
+      if (socket.data.roomId) throw new Error('Already in a room')
+      const room = rooms.get(roomId)
+      const seatId = room.reconnect(token, socket.id)
+      bindSocket(socket, room, seatId)
+      return { seatId, started: room.started }
     }))
 
     socket.on(EVENTS.GAME_PLAY, handler(playSchema, ({ cardId, tableCardIds }) => {
-      if (!socket.data.roomId) throw new Error('Not in a room')
-      const room = rooms.get(socket.data.roomId)
-      const summary = room.play(socket.id, cardId, tableCardIds)
+      const { room, seatId } = session(socket)
+      const summary = room.play(seatId, cardId, tableCardIds)
       broadcastState(room)
       if (summary) io.to(room.id).emit(EVENTS.ROUND_OVER, summary)
       return {}
     }))
 
     socket.on('disconnect', () => {
-      const roomId = socket.data.roomId
-      if (!roomId) return
-      const room = rooms.get(roomId)
-      if (room.leave(socket.id) && room.players.length > 0) broadcastState(room)
+      if (!socket.data.roomId) return
+      const room = rooms.rooms.get(socket.data.roomId)
+      if (!room) return
+      const seatId = room.detach(socket.id)
+      if (!seatId) return // stale socket: the seat already reconnected elsewhere
+
+      // Lobby: the seat is freed. Started game: the seat is kept for reconnect.
+      if (!room.started) room.removeFromLobby(seatId)
+      broadcastState(room)
+      rooms.refresh(room)
     })
   })
 

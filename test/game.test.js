@@ -80,17 +80,17 @@ describe('Game setup', () => {
     assert.deepEqual(order, ['A', 'B', 'A', 'B'])
   })
 
-  test('next round starts with the next seat', () => {
+  test('every round starts with seat 1, not the seat after the last starter', () => {
     const two = [new Player('a', 'A'), new Player('b', 'B')]
     const game = new Game(two, { rng: seeded(5) })
-    game.startRound()
-    const before = game.startingIndex
-    // play out the round with the bot
-    while (!game.round.isOver) {
-      const [cardId, ids] = findMove(game.round)
-      game.play(game.round.currentPlayer.id, cardId, ids)
+    for (let r = 0; r < 3 && !game.isOver; r++) {
+      game.startRound()
+      assert.equal(game.round.currentPlayer.id, 'a')
+      while (!game.round.isOver) {
+        const [cardId, ids] = findMove(game.round)
+        game.play(game.round.currentPlayer.id, cardId, ids)
+      }
     }
-    assert.equal(game.startingIndex, (before + 1) % 2)
   })
 })
 

@@ -4,16 +4,16 @@ import { scoreRound } from './scoring.js'
 import { TARGET_SCORE, TEAMS, PLAYER_COUNTS } from '../constants.js'
 
 export default class Game {
-  constructor (players, { targetScore = TARGET_SCORE, rng = Math.random, startingIndex = 0 } = {}) {
+  // Seats are players[0..n-1]. Every round starts at seat 0 and plays in array order.
+  constructor (players, { targetScore = TARGET_SCORE, rng = Math.random } = {}) {
     if (!PLAYER_COUNTS.includes(players.length)) throw new Error(`A game needs ${PLAYER_COUNTS.join(' or ')} players`)
 
-    // Seats alternate teams, so players across the table share a team
+    // Seats alternate teams: seat 1 and 3 are A, seat 2 and 4 are B
     players.forEach((p, i) => { p.team = TEAMS[i % 2] })
 
     this.players = players
     this.targetScore = targetScore
     this.rng = rng
-    this.startingIndex = startingIndex
     this.scores = Object.fromEntries(TEAMS.map(t => [t, 0]))
     this.history = []
     this.round = null
@@ -30,8 +30,7 @@ export default class Game {
 
     this.players.forEach(p => p.reset())
     this.round = new Round(this.players, {
-      deck: new Deck(null, this.rng).shuffle(),
-      startingIndex: this.startingIndex
+      deck: new Deck(null, this.rng).shuffle()
     })
     return this.round
   }
@@ -55,7 +54,6 @@ export default class Game {
     for (const t of TEAMS) this.scores[t] += points[t]
 
     this.winner = this._checkWinner()
-    this.startingIndex = (this.startingIndex + 1) % this.players.length
 
     const summary = { points, breakdown, scores: { ...this.scores }, winner: this.winner }
     this.history.push(summary)

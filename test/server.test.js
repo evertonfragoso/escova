@@ -10,7 +10,7 @@ const seeded = seed => () => {
   return seed / 2147483647
 }
 
-const { server, io } = createServer({ rooms: new RoomManager({ rng: seeded(11) }) })
+const { server, io } = createServer({ rooms: new RoomManager({ rng: seeded(11), graceMs: 60_000 }) })
 await new Promise(resolve => server.listen(0, resolve))
 const url = `http://localhost:${server.address().port}`
 const clients = []
@@ -21,7 +21,7 @@ after(() => {
   server.close()
 })
 
-// Records the latest state each client received, so no broadcast can be missed
+// Records the latest state each socket received, so no broadcast can be missed
 function client () {
   const s = connect(url, { transports: ['websocket'], forceNew: true })
   s.latest = null
@@ -43,9 +43,7 @@ async function waitFor (fn, ms = 2000) {
 describe('socket server', () => {
   test('4 players join, game auto-starts, each sees only their own hand', async () => {
     const sockets = await Promise.all([client(), client(), client(), client()])
-    const [host] = sockets
-    const { roomId } = await emit(host, EVENTS.ROOM_CREATE, { capacity: 4 })
-    assert.ok(roomId)
+    const { roomId } = await emit(sockets[0], EVENTS.ROOM_CREATE, { capacity: 4 })
 
     const names = ['Ana', 'Bruno', 'Caio', 'Dani']
     for (let i = 0; i < 4; i++) {
@@ -55,10 +53,11 @@ describe('socket server', () => {
 
     await waitFor(() => sockets.every(s => s.latest?.started))
 
+    const host = sockets[0]
     const view = host.latest
-    const mine = view.round.players.find(p => p.id === host.id)
-    assert.equal(mine.hand.length, 3)
-    for (const p of view.round.players.filter(p => p.id !== host.id)) {
+    assert.equal(view.you, 'p1')
+    assert.equal(view.round.players.find(p => p.id === 'p1').hand.length, 3)
+    for (const p of view.round.players.filter(p => p.id !== 'p1')) {
       assert.equal(p.hand, undefined)
     }
     assert.deepEqual(view.players.map(p => p.team), ['A', 'B', 'A', 'B'])
@@ -72,9 +71,9 @@ describe('socket server', () => {
     await emit(b, EVENTS.ROOM_JOIN, { roomId, name: 'B' })
     await waitFor(() => a.latest?.started && b.latest?.started)
 
-    const notMyTurn = a.latest.round.currentPlayerId === b.id ? a : b
-    const card = notMyTurn.latest.round.players.find(p => p.id === notMyTurn.id).hand[0].id
-    const res = await emit(notMyTurn, EVENTS.GAME_PLAY, { cardId: card, tableCardIds: [] })
+    const notUp = a.latest.round.currentPlayerId === 'p1' ? b : a
+    const card = notUp.latest.round.players.find(p => p.id === notUp.latest.you).hand[0].id
+    const res = await emit(notUp, EVENTS.GAME_PLAY, { cardId: card, tableCardIds: [] })
     assert.equal(res.ok, false)
     assert.match(res.error, /turn/)
   })
@@ -84,5 +83,39 @@ describe('socket server', () => {
     const res = await emit(a, EVENTS.ROOM_CREATE, { capacity: 3 })
     assert.equal(res.ok, false)
     assert.equal(res.error, 'Invalid payload')
+  })
+
+  test('mid-game drop keeps the seat; reconnect with the token restores the same hand', async () => {
+    const a = await client()
+    const b = await client()
+    const { roomId } = await emit(a, EVENTS.ROOM_CREATE, { capacity: 2 })
+    const joinA = await emit(a, EVENTS.ROOM_JOIN, { roomId, name: 'A' })
+    await emit(b, EVENTS.ROOM_JOIN, { roomId, name: 'B' })
+    await waitFor(() => a.latest?.started && b.latest?.started)
+
+    const handBefore = a.latest.round.players.find(p => p.id === joinA.seatId).hand.map(c => c.id)
+
+    a.disconnect()
+    await waitFor(() => b.latest.players.find(p => p.id === 'p1').connected === false)
+
+    const a2 = await client()
+    const res = await emit(a2, EVENTS.ROOM_RECONNECT, { roomId, token: joinA.playerId })
+    assert.equal(res.ok, true)
+    assert.equal(res.seatId, 'p1')
+
+    await waitFor(() => a2.latest?.you === 'p1')
+    const handAfter = a2.latest.round.players.find(p => p.id === 'p1').hand.map(c => c.id)
+    assert.deepEqual(handAfter, handBefore)
+    await waitFor(() => b.latest.players.find(p => p.id === 'p1').connected === true)
+  })
+
+  test('reconnect with an unknown token is rejected', async () => {
+    const a = await client()
+    const { roomId } = await emit(a, EVENTS.ROOM_CREATE, { capacity: 2 })
+    await emit(a, EVENTS.ROOM_JOIN, { roomId, name: 'A' })
+    const b = await client()
+    const res = await emit(b, EVENTS.ROOM_RECONNECT, { roomId, token: 'not-a-real-token' })
+    assert.equal(res.ok, false)
+    assert.match(res.error, /Unknown player token/)
   })
 })

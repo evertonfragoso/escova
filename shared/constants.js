@@ -30,3 +30,6 @@ export const RANK_VALUE = Object.freeze({ A: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7:
 
 // Primeira ("highest seven") value of each rank, used for the highest-seven point
 export const PRIMEIRA_VALUE = Object.freeze({ 7: 21, 6: 18, A: 16, 5: 15, 4: 14, 3: 13, 2: 12, Q: 10, J: 10, K: 10 })
+
+// Grace timer for room to be removed when player disconnect
+export const DEFAULT_GRACE_MS = 10 * 60 * 1000
