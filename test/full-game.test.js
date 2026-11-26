@@ -78,6 +78,8 @@ function assertRulesHold (count, { game, players, rounds }) {
     // Each round uses every hand card once: deck minus start table, all played
     const playsExpected = DECK_SIZE - START_TABLE_SIZE
     assert.equal(round.turns.length, playsExpected, `${label} play count`)
+    // Each round ends on the last seat: player 4 in a 4-player game, player 2 in a 2-player game
+    assert.equal(round.turns.at(-1).seatId, seatIds[(playsExpected - 1) % count], `${label} must end on the last seat`)
 
     // Every round ends with a summary, and every card ends up captured
     assert.ok(round.summary, `${label} has no round summary`)
