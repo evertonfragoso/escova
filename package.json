@@ -4,16 +4,28 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.js",
+    "build": "vite build",
+    "start": "npm run build && node server/index.js",
+    "dev": "concurrently -n server,client -c blue,green \"node --watch server/index.js\" \"vite\"",
+    "pretest": "vite build",
+    "test": "node --test --test-force-exit test/*.test.js",
+    "pretest:e2e": "vite build",
     "test:e2e": "node --test --test-force-exit test/e2e.browser.test.js"
   },
   "dependencies": {
     "express": "^5.3.0",
     "socket.io": "^4.8.4",
+    "svelte": "^5.59.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "concurrently": "^9.2.5",
     "playwright-core": "^1.65.1",
-    "socket.io-client": "^4.8.4"
+    "socket.io-client": "^4.8.4",
+    "vite": "^6.4.6"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
   }
 }

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import express from 'express'
 import { Server } from 'socket.io'
 import RoomManager from './RoomManager.js'
+import { config } from './config.js'
 import {
   EVENTS, createRoomSchema, joinRoomSchema, reconnectSchema, playSchema
 } from '../shared/protocol.js'
@@ -24,9 +25,9 @@ function handler (schema, fn) {
 
 export function createServer ({ rooms = new RoomManager() } = {}) {
   const app = express()
-  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-  app.use(express.static(path.join(root, 'client')))
-  app.use('/shared', express.static(path.join(root, 'shared')))
+  // Serves the Svelte build. Run `npm run build` first (npm start does it for you).
+  const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'client', 'dist')
+  app.use(express.static(dist))
   const server = http.createServer(app)
   const io = new Server(server)
 
@@ -101,7 +102,6 @@ export function createServer ({ rooms = new RoomManager() } = {}) {
 
 // Start only when run directly, not when imported by tests
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const port = process.env.PORT || 3000
   const { server } = createServer()
-  server.listen(port, () => console.log(`listening on :${port}`))
+  server.listen(config.port, () => console.log(`listening on :${config.port}`))
 }

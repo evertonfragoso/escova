@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import Room from './Room.js'
-import { DEFAULT_GRACE_MS } from './config.js'
+import { config } from './config.js'
 
 export default class RoomManager {
-  constructor ({ rng = Math.random, newId = () => randomUUID().slice(0, 8), graceMs = DEFAULT_GRACE_MS } = {}) {
+  constructor ({ rng = Math.random, newId = () => randomUUID().slice(0, 8), graceMs = config.roomGraceMs } = {}) {
     this.rng = rng
     this.newId = newId
     this.graceMs = graceMs
