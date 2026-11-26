@@ -20,6 +20,9 @@ button {
   text-transform: uppercase;
 }
 button:disabled { cursor: not-allowed; opacity: .4; }
+
+button.card { background-color: transparent; border: none; padding: 0; text-transform: none; }
+button.card:not(:disabled):hover { --button_bg: transparent; }
 button:not(:disabled):hover { --button_bg: #666; }
 
 input[type="text"] {
@@ -64,11 +67,7 @@ main { margin: 0 auto; max-width: 70rem; padding: var(--spacing); }
 }
 .card.selectable:hover { outline: 2px solid rgba(0, 0, 0, .6); }
 .card.selected { outline: 3px solid var(--card_selected); }
-.card.back {
-  background-image: url('/images/card_back.png');
-  background-size: cover;
-  cursor: default;
-}
+.card.back { background-image: url('/images/card_back.png'); background-size: cover; cursor: default; }
 
 .card[data-suit="hearts"] { background-position-y: 0; }
 .card[data-suit="spades"] { background-position-y: calc(var(--card_height) * -1 * .5); }
@@ -89,13 +88,7 @@ main { margin: 0 auto; max-width: 70rem; padding: var(--spacing); }
 .sum.ok { color: #3c3; }
 .sum.bad { color: #c33; }
 
-.overlay {
-  align-items: center;
-  background: rgba(0, 0, 0, .6);
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  position: fixed;
-}
-.overlay .panel { background: #fff; max-width: 28rem; width: 90%; }
+dialog { border: 1px solid #000; border-radius: .8rem; max-width: 28rem; padding: var(--spacing); width: 90%; }
+dialog::backdrop { background: rgba(0, 0, 0, .6); }
+
 [hidden] { display: none !important; }

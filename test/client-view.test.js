@@ -6,10 +6,26 @@ import { TAKE_SUM } from '../shared/constants.js'
 const card = (id, value) => ({ id, value, rank: String(value), suit: 'clubs' })
 
 describe('board rules for the UI', () => {
-  test('selectionSum adds only the selected table cards', () => {
+  test('selectionSum counts the hand card plus the selected table cards', () => {
     const table = [card('a', 5), card('b', 10), card('c', 2)]
-    assert.equal(selectionSum(table, new Set(['a', 'b'])), 15)
-    assert.equal(selectionSum(table, new Set()), 0)
+    assert.equal(selectionSum({ handCard: card('h', 3), table, selectedTableIds: new Set(['a']) }), 8)
+    assert.equal(selectionSum({ handCard: card('h', 5), table, selectedTableIds: new Set(['a', 'b']) }), 20)
+  })
+
+  test('a hand card alone sums to its own value (discard case)', () => {
+    assert.equal(selectionSum({ handCard: card('h', 7), table: [card('a', 5)], selectedTableIds: new Set() }), 7)
+  })
+
+  test('nothing selected sums to 0', () => {
+    assert.equal(selectionSum({ handCard: null, table: [card('a', 5)], selectedTableIds: new Set() }), 0)
+  })
+
+  test('a 7 in hand plus an 8 on the table is a capture of 15 (the reported bug)', () => {
+    const handCard = card('h', 7)
+    const table = [card('t', 8)]
+    const sum = selectionSum({ handCard, table, selectedTableIds: new Set(['t']) })
+    assert.equal(sum, 15)
+    assert.equal(canCapture({ myTurn: true, cardSelected: true, tableCount: 1, sum }), true)
   })
 
   test('discard needs your turn, a hand card, and an empty table selection', () => {

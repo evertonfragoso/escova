@@ -2,8 +2,12 @@
 // The server is the authority. These only decide what the player can click.
 import { TAKE_SUM } from '../../../shared/constants.js'
 
-export function selectionSum (table, selectedIds) {
-  return table.filter(c => selectedIds.has(c.id)).reduce((n, c) => n + c.value, 0)
+// Total of the played hand card plus the selected table cards: what a capture must make 15
+export function selectionSum ({ handCard, table, selectedTableIds }) {
+  const tableTotal = table
+    .filter(c => selectedTableIds.has(c.id))
+    .reduce((n, c) => n + c.value, 0)
+  return (handCard?.value ?? 0) + tableTotal
 }
 
 export function canDiscard ({ myTurn, cardSelected, tableCount }) {

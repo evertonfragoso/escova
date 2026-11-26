@@ -15,7 +15,8 @@
   const me = $derived(round.players.find(p => p.id === view.you))
   const myTurn = $derived(round.currentPlayerId === view.you)
   const onTurn = $derived(round.players.find(p => p.id === round.currentPlayerId))
-  const sum = $derived(selectionSum(round.table, selectedTable))
+  const handCard = $derived(me?.hand?.find(c => c.id === selectedHand) ?? null)
+  const sum = $derived(selectionSum({ handCard, table: round.table, selectedTableIds: selectedTable }))
   const discardOk = $derived(canDiscard({ myTurn, cardSelected: !!selectedHand, tableCount: selectedTable.size }))
   const captureOk = $derived(canCapture({ myTurn, cardSelected: !!selectedHand, tableCount: selectedTable.size, sum }))
   const sumClass = $derived(sum === TAKE_SUM ? 'ok' : (selectedTable.size || selectedHand ? 'bad' : ''))
@@ -93,7 +94,7 @@
 </section>
 
 <section class="panel row">
-  <span class="sum {sumClass}">Soma: {sum}</span>
+  <output class="sum {sumClass}" aria-label="Soma das cartas selecionadas">Soma: {sum}</output>
   <button type="button" disabled={!discardOk} onclick={() => play([])}>Descartar</button>
   <button type="button" disabled={!captureOk} onclick={() => play([...selectedTable])}>Capturar</button>
   <p class="muted">

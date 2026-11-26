@@ -58,6 +58,8 @@ test('two players join, play a turn, reload and reconnect', { skip, timeout: 60_
   // Whoever is on turn discards one card
   const onTurn = (await a.locator('p.muted', { hasText: /^Sua vez/ }).count()) ? a : b
   await onTurn.locator('.hand-area .card').first().click()
+  // Selecting a hand card must count toward the sum (regression: it used to count 0)
+  assert.notEqual(await onTurn.locator('output.sum').textContent(), 'Soma: 0')
   await onTurn.getByRole('button', { name: 'Descartar' }).click()
   await onTurn.locator('p.muted', { hasText: /^Aguardando / }).waitFor({ timeout: 5_000 })
   const other = onTurn === a ? b : a
