@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { selectionSum, canDiscard, canCapture, prune } from '../client/src/lib/view.js'
+import { selectionSum, canDiscard, canCapture, prune, activeDialog } from '../client/src/lib/view.js'
 import { TAKE_SUM } from '../shared/constants.js'
 
 const card = (id, value) => ({ id, value, rank: String(value), suit: 'clubs' })
@@ -64,5 +64,24 @@ describe('board rules for the UI', () => {
     const next = prune(state, 'h1', new Set(['t1']))
     assert.equal(next.hand, 'h1')
     assert.deepEqual([...next.table], ['t1'])
+  })
+})
+
+describe('which end dialog is shown', () => {
+  test('nothing when the game is running and no round has ended', () => {
+    assert.equal(activeDialog({ view: { winner: null }, roundSummary: null }), null)
+  })
+
+  test('round dialog after a normal round end', () => {
+    assert.equal(activeDialog({ view: { winner: null }, roundSummary: { winner: null } }), 'round')
+  })
+
+  test('game dialog wins when the game is over, even with a stale round summary', () => {
+    assert.equal(activeDialog({ view: { winner: 'A' }, roundSummary: { winner: 'A' } }), 'game')
+    assert.equal(activeDialog({ view: { winner: 'A' }, roundSummary: { winner: null } }), 'game')
+  })
+
+  test('a round summary that ends the game is never shown as the round dialog', () => {
+    assert.equal(activeDialog({ view: { winner: null }, roundSummary: { winner: 'B' } }), null)
   })
 })

@@ -18,6 +18,13 @@ export function canCapture ({ myTurn, cardSelected, tableCount, sum }) {
   return myTurn && cardSelected && tableCount > 0 && sum === TAKE_SUM
 }
 
+// Which end dialog to show. The game-over dialog wins; a round summary that ends the game is never stored.
+export function activeDialog ({ view, roundSummary }) {
+  if (view?.winner) return 'game'
+  if (roundSummary && !roundSummary.winner) return 'round'
+  return null
+}
+
 // Drops selections that no longer exist after a server update
 export function prune (state, selectedHand, selectedTable) {
   const round = state.round

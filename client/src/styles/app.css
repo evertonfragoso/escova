@@ -34,6 +34,7 @@
   .table-area,
   .hand-area {
     @apply flex min-h-40 flex-wrap items-center justify-center gap-1 rounded-2xl bg-emerald-800 p-4 shadow-inner;
+    background-image: url('/images/background.jpg');
   }
 
   .seats {
@@ -55,7 +56,8 @@
   .sum.bad { @apply text-rose-600; }
 
   dialog {
-    @apply w-[90%] max-w-md rounded-2xl bg-white p-6 text-stone-900 shadow-xl;
+    /* Tailwind preflight zeroes margins; a modal dialog needs margin:auto to sit in the centre */
+    @apply m-auto w-[90%] max-w-md rounded-2xl bg-white p-6 text-stone-900 shadow-xl;
   }
   dialog::backdrop {
     @apply bg-black/60;

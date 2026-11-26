@@ -10,7 +10,10 @@ export const roundSummary = writable(null)
 export const socket = io()
 
 socket.on(EVENTS.ROOM_STATE, state => roomState.set(state))
-socket.on(EVENTS.ROUND_OVER, summary => roundSummary.set(summary))
+// A round that ends the game is announced by the game-over dialog, not the round dialog
+socket.on(EVENTS.ROUND_OVER, summary => {
+  if (!summary.winner) roundSummary.set(summary)
+})
 socket.on('connect', resume)
 
 // Promise-based request: resolves with the server ack { ok, ... }
@@ -28,6 +31,7 @@ export async function leaveRoom () {
   if (res.ok) {
     session.clear()
     roomState.set(null)
+    roundSummary.set(null)
   }
   return res
 }

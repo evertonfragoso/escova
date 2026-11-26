@@ -113,6 +113,11 @@ test('2 players: a full round of discards ends with the round-over dialog', { sk
   const title = page.locator('dialog[open] h2')
   await title.waitFor({ timeout: 10_000 })
   assert.match(await title.textContent(), /Fim da rodada/)
+  // The dialog must sit in the middle of the viewport, not at the top-left corner
+  const box = await page.locator('dialog[open]').boundingBox()
+  const view = page.viewportSize()
+  assert.ok(Math.abs(box.x + box.width / 2 - view.width / 2) < 4, 'dialog is not horizontally centred')
+  assert.ok(Math.abs(box.y + box.height / 2 - view.height / 2) < 4, 'dialog is not vertically centred')
   assert.equal(plays, 36, 'a round is 36 plays')
 
   assert.deepEqual(a.problems, [], `page A: ${a.problems.join(' | ')}`)

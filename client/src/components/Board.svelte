@@ -63,10 +63,10 @@
       <span class="muted">· {p.team} · {p.handSize} na mão · {p.capturedCount} capturadas</span>
       {#if !info.connected}<span class="muted">(desconectado)</span>{/if}
       {#if p.escovas}
-        <span class="badge" title="Escovas"><img src="/images/escova.png" alt="Escovas" height="20" /> {p.escovas}</span>
+        <span class="badge" title="Escovas"><img src="/images/escova.png" alt="Escovas" /> {p.escovas}</span>
       {/if}
       {#if p.hasSeteBelo}
-        <span class="badge" title="Sete belo (7 de ouros)"><img src="/images/7belo.png" alt="Sete belo (7 de ouros)" height="20" /></span>
+        <span class="badge" title="Sete belo (7 de ouros)"><img src="/images/7belo.png" alt="Sete belo (7 de ouros)" /></span>
       {/if}
     </li>
   {/each}

@@ -1,5 +1,6 @@
 <script>
   import { roomState, roundSummary, dismissRoundSummary } from './lib/connection.js'
+  import { activeDialog } from './lib/view.js'
   import Lobby from './components/Lobby.svelte'
   import Board from './components/Board.svelte'
   import RoundOver from './components/RoundOver.svelte'
@@ -15,9 +16,9 @@
     <Lobby view={$roomState} />
   {/if}
 
-  {#if $roomState?.winner}
+  {#if activeDialog({ view: $roomState, roundSummary: $roundSummary }) === 'game'}
     <GameOver view={$roomState} />
-  {:else if $roundSummary}
+  {:else if activeDialog({ view: $roomState, roundSummary: $roundSummary }) === 'round'}
     <RoundOver summary={$roundSummary} onclose={dismissRoundSummary} />
   {/if}
 </main>
