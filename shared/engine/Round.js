@@ -45,6 +45,7 @@ export default class Round {
     if (this.currentPlayer.id !== playerId) throw new Error(`Not ${playerId}'s turn`)
   }
 
+  // Fixed seat order. Teams alternate because Game seats them A, B, A, B.
   _advanceTurn () {
     this.turnIndex = (this.turnIndex + 1) % this.players.length
     if (this.players.every(p => p.hand.length === 0)) this._dealHands()
