@@ -1,4 +1,5 @@
 import http from 'node:http'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
 import { Server } from 'socket.io'
@@ -23,6 +24,9 @@ function handler (schema, fn) {
 
 export function createServer ({ rooms = new RoomManager() } = {}) {
   const app = express()
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+  app.use(express.static(path.join(root, 'client')))
+  app.use('/shared', express.static(path.join(root, 'shared')))
   const server = http.createServer(app)
   const io = new Server(server)
 
