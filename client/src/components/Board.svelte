@@ -48,42 +48,47 @@
   }
 </script>
 
-<section class="panel row">
+<header class="panel flex flex-wrap items-baseline gap-x-6 gap-y-1">
   {#each TEAMS as t (t)}
-    <strong>Equipe {t}: {view.scores[t]}</strong>
+    <p class="text-lg"><strong>Equipe {t}:</strong> <span class="font-mono text-2xl font-bold">{view.scores[t]}</span></p>
   {/each}
-  <span class="muted">Meta: {TARGET_SCORE}</span>
-</section>
+  <p class="muted">Meta: {TARGET_SCORE}</p>
+</header>
 
-<ul class="seats">
+<ol class="seats" aria-label="Jogadores">
   {#each round.players as p (p.id)}
     {@const info = view.players.find(x => x.id === p.id)}
-    <li class:turn={p.id === round.currentPlayerId} class:offline={!info.connected}>
-      {p.id === view.you ? 'Você' : p.name} · {p.team} · {p.handSize} na mão · {p.capturedCount} capturadas
-      {#if !info.connected} (desconectado){/if}
+    <li aria-current={p.id === round.currentPlayerId ? 'step' : undefined} class:offline={!info.connected}>
+      <span class="font-medium">{p.id === view.you ? 'Você' : p.name}</span>
+      <span class="muted">· {p.team} · {p.handSize} na mão · {p.capturedCount} capturadas</span>
+      {#if !info.connected}<span class="muted">(desconectado)</span>{/if}
       {#if p.escovas}
-        · <img src="/images/escova.png" alt="escova" height="18" /> {p.escovas}
+        <span class="badge" title="Escovas"><img src="/images/escova.png" alt="Escovas" height="20" /> {p.escovas}</span>
+      {/if}
+      {#if p.hasSeteBelo}
+        <span class="badge" title="Sete belo (7 de ouros)"><img src="/images/7belo.png" alt="Sete belo (7 de ouros)" height="20" /></span>
       {/if}
     </li>
   {/each}
-</ul>
+</ol>
 
-<section class="panel">
-  <p class="muted">Monte: {round.deckSize} cartas</p>
-  <h3>Mesa</h3>
+<p class="muted">Monte: {round.deckSize} cartas</p>
+
+<section class="panel flex flex-col gap-3" aria-labelledby="table-title">
+  <h2 id="table-title">Mesa</h2>
   <div class="table-area">
     {#if round.table.length}
       {#each round.table as c (c.id)}
         <CardView card={c} selectable={myTurn} selected={selectedTable.has(c.id)} onselect={toggleTable} />
       {/each}
     {:else}
-      <p class="muted">Mesa vazia</p>
+      <p class="text-white/80">Mesa vazia</p>
     {/if}
   </div>
 </section>
 
-<section class="panel">
-  <h3>Minhas cartas</h3>
+<section class="panel flex flex-col gap-3" aria-labelledby="hand-title">
+  <h2 id="hand-title">Minhas cartas</h2>
   <div class="hand-area">
     {#if me?.hand}
       {#each me.hand as c (c.id)}
@@ -93,11 +98,11 @@
   </div>
 </section>
 
-<section class="panel row">
+<section class="panel flex flex-wrap items-center gap-3" aria-label="Jogada">
   <output class="sum {sumClass}" aria-label="Soma das cartas selecionadas">Soma: {sum}</output>
-  <button type="button" disabled={!discardOk} onclick={() => play([])}>Descartar</button>
-  <button type="button" disabled={!captureOk} onclick={() => play([...selectedTable])}>Capturar</button>
-  <p class="muted">
+  <button type="button" class="btn" disabled={!discardOk} onclick={() => play([])}>Descartar</button>
+  <button type="button" class="btn btn-primary" disabled={!captureOk} onclick={() => play([...selectedTable])}>Capturar</button>
+  <p class="muted basis-full sm:basis-auto" role="status">
     {#if myTurn}
       Sua vez: escolha uma carta da mão e, se quiser capturar, cartas da mesa que somem 15.
     {:else}
@@ -106,4 +111,4 @@
   </p>
 </section>
 
-<p class="error">{error}</p>
+<p class="error" role="alert">{error}</p>

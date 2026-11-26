@@ -1,5 +1,5 @@
-// Real-browser test. Opt-in: set CHROME_PATH to a Chromium binary and run `npm run test:e2e`.
-import { test, after } from 'node:test'
+// Real-browser tests. Opt-in: set CHROME_PATH to a Chromium-based binary and run `npm run test:e2e`.
+import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright-core'
 import { createServer } from '../server/index.js'
@@ -9,9 +9,14 @@ const CHROME = process.env.CHROME_PATH
 const skip = CHROME ? false : 'set CHROME_PATH to run'
 
 const { server, io } = createServer({ rooms: new RoomManager({ graceMs: 60_000 }) })
-await new Promise(resolve => server.listen(0, resolve))
-const base = `http://localhost:${server.address().port}`
+let base
 let browser
+
+before(async () => {
+  await new Promise(resolve => server.listen(0, resolve))
+  base = `http://localhost:${server.address().port}`
+  if (!skip) browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
+})
 
 after(async () => {
   await browser?.close()
@@ -19,58 +24,114 @@ after(async () => {
   server.close()
 })
 
+// Every page records JS errors and failed HTTP responses, so a 404 fails the test
 async function openPage (ctx) {
   const page = await ctx.newPage()
-  page.errors = []
-  page.on('pageerror', e => page.errors.push(e.message))
-  page.on('console', m => { if (m.type() === 'error') page.errors.push(m.text()) })
+  page.problems = []
+  page.on('pageerror', e => page.problems.push(`js: ${e.message}`))
+  page.on('console', m => { if (m.type() === 'error') page.problems.push(`console: ${m.text()}`) })
+  page.on('response', r => { if (r.status() >= 400) page.problems.push(`http ${r.status()}: ${r.url()}`) })
   await page.goto(base)
   return page
 }
 
-test('two players join, play a turn, reload and reconnect', { skip, timeout: 60_000 }, async () => {
-  browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
-  const ctxA = await browser.newContext()
-  const ctxB = await browser.newContext()
-  const a = await openPage(ctxA)
-  const b = await openPage(ctxB)
+const myTurnLabel = page => page.locator('p[role="status"]', { hasText: /^\s*Sua vez/ })
 
-  // A creates a 2-player room and joins it with a name
-  await a.locator('input[placeholder="Seu nome"]').fill('Ana')
-  await a.getByRole('button', { name: 'Nova sala (2 jogadores)' }).click()
-  await a.locator('text=Código da sala').waitFor()
-  const roomCode = (await a.locator('strong').first().textContent()).trim()
-  assert.ok(roomCode.length >= 4)
+// Returns the page whose turn it is, after the board has rendered
+async function pageOnTurn (pages) {
+  for (let i = 0; i < 100; i++) {
+    for (const p of pages) {
+      if (await myTurnLabel(p).count()) return p
+    }
+    await new Promise(r => setTimeout(r, 50))
+  }
+  throw new Error('no page is on turn')
+}
 
-  // B joins with the code
-  await b.locator('input[placeholder="Código da sala"]').fill(roomCode)
-  await b.locator('input[placeholder="Seu nome"]').fill('Bruno')
-  await b.getByRole('button', { name: 'Entrar' }).click()
+async function createRoom (host, name, capacity) {
+  await host.locator('input[placeholder="Seu nome"]').fill(name)
+  await host.getByRole('button', { name: `Nova sala (${capacity} jogadores)` }).click()
+  await host.locator('text=Código da sala').waitFor()
+  return (await host.locator('strong').first().textContent()).trim()
+}
 
-  // Game starts on its own: both pages show the board
+async function joinRoom (page, code, name) {
+  await page.locator('input[placeholder="Código da sala"]').fill(code)
+  await page.locator('input[placeholder="Seu nome"]').fill(name)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+}
+
+test('2 players: join, play, reload and reconnect with no 404 or JS errors', { skip, timeout: 60_000 }, async () => {
+  const a = await openPage(await browser.newContext())
+  const b = await openPage(await browser.newContext())
+  const code = await createRoom(a, 'Ana', 2)
+  await joinRoom(b, code, 'Bruno')
+
   await a.locator('.hand-area .card').first().waitFor({ timeout: 10_000 })
   await b.locator('.hand-area .card').first().waitFor({ timeout: 10_000 })
 
-  // Card images come from local files, not a CDN
+  // Card art comes from local files
   const bg = await a.locator('.card').first().evaluate(el => getComputedStyle(el).backgroundImage)
   assert.match(bg, /\/images\/cards_sheet\.png/)
 
-  // Whoever is on turn discards one card
-  const onTurn = (await a.locator('p.muted', { hasText: /^Sua vez/ }).count()) ? a : b
+  // Selecting a hand card counts toward the sum
+  const onTurn = await pageOnTurn([a, b])
   await onTurn.locator('.hand-area .card').first().click()
-  // Selecting a hand card must count toward the sum (regression: it used to count 0)
   assert.notEqual(await onTurn.locator('output.sum').textContent(), 'Soma: 0')
   await onTurn.getByRole('button', { name: 'Descartar' }).click()
-  await onTurn.locator('p.muted', { hasText: /^Aguardando / }).waitFor({ timeout: 5_000 })
-  const other = onTurn === a ? b : a
-  await other.locator('p.muted', { hasText: /^Sua vez/ }).waitFor({ timeout: 5_000 })
 
-  // A reloads the page: the same seat comes back with its hand
+  // A reloads: the same seat and hand come back
   const handBefore = await a.locator('.hand-area .card').count()
   await a.reload()
   await a.locator('.hand-area .card').first().waitFor({ timeout: 10_000 })
   assert.equal(await a.locator('.hand-area .card').count(), handBefore)
 
-  assert.deepEqual(a.errors, [], `page A errors: ${a.errors.join(' | ')}`)
-  assert.deepEqual(b.errors, [], `page B errors: ${b.errors.join(' | ')}`)
+  assert.deepEqual(a.problems, [], `page A: ${a.problems.join(' | ')}`)
+  assert.deepEqual(b.problems, [], `page B: ${b.problems.join(' | ')}`)
+})
+
+test('2 players: a full round of discards ends with the round-over dialog', { skip, timeout: 120_000 }, async () => {
+  const a = await openPage(await browser.newContext())
+  const b = await openPage(await browser.newContext())
+  const code = await createRoom(a, 'Ana', 2)
+  await joinRoom(b, code, 'Bruno')
+  await a.locator('.hand-area .card').first().waitFor({ timeout: 10_000 })
+
+  // 36 plays end a round. Discards never capture, so the round ends with 0 points each
+  let plays = 0
+  while (plays < 40) {
+    const dialogOpen = await a.locator('dialog[open]').count() + await b.locator('dialog[open]').count()
+    if (dialogOpen) break
+    const onTurn = await pageOnTurn([a, b])
+    await onTurn.locator('.hand-area .card').first().click()
+    await onTurn.getByRole('button', { name: 'Descartar' }).click()
+    plays++
+    await new Promise(r => setTimeout(r, 100))
+  }
+
+  const page = (await a.locator('dialog[open]').count()) ? a : b
+  const title = page.locator('dialog[open] h2')
+  await title.waitFor({ timeout: 10_000 })
+  assert.match(await title.textContent(), /Fim da rodada/)
+  assert.equal(plays, 36, 'a round is 36 plays')
+
+  assert.deepEqual(a.problems, [], `page A: ${a.problems.join(' | ')}`)
+  assert.deepEqual(b.problems, [], `page B: ${b.problems.join(' | ')}`)
+})
+
+test('4 players: all four join, seats show teams A and B, and only one seat is on turn', { skip, timeout: 60_000 }, async () => {
+  const pages = []
+  for (let i = 0; i < 4; i++) pages.push(await openPage(await browser.newContext()))
+  const code = await createRoom(pages[0], 'P1', 4)
+  for (let i = 1; i < 4; i++) await joinRoom(pages[i], code, `P${i + 1}`)
+
+  for (const p of pages) await p.locator('.hand-area .card').first().waitFor({ timeout: 10_000 })
+
+  const seats = pages[0].locator('ol.seats li')
+  assert.equal(await seats.count(), 4)
+  const teams = await seats.evaluateAll(lis => lis.map(li => li.textContent.match(/· ([AB]) ·/)?.[1]))
+  assert.deepEqual(teams, ['A', 'B', 'A', 'B'])
+  assert.equal(await pages[0].locator('ol.seats li[aria-current="step"]').count(), 1)
+
+  for (const p of pages) assert.deepEqual(p.problems, [], `page: ${p.problems.join(' | ')}`)
 })

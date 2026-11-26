@@ -43,7 +43,7 @@ describe('Room', () => {
   test('lobby leave frees the seat and invalidates its token', () => {
     const room = new Room('r', 4, { rng: seeded(5) })
     const { seatId, token } = room.join('A', 's1')
-    room.removeFromLobby(seatId)
+    room.removePlayer(seatId)
     assert.equal(room.players.length, 0)
     assert.throws(() => room.reconnect(token, 's2'), /Unknown player token/)
   })

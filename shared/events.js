@@ -4,6 +4,8 @@ export const EVENTS = Object.freeze({
   ROOM_JOIN: 'room:join',
   ROOM_RECONNECT: 'room:reconnect',
   ROOM_STATE: 'room:state',
+  ROOM_LEAVE: 'room:leave',
+  ROOM_REMATCH: 'room:rematch',
   GAME_PLAY: 'game:play',
   ROUND_OVER: 'round:over'
 })

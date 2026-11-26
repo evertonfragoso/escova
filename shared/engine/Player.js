@@ -34,7 +34,9 @@ export default class Player {
       team: this.team,
       handSize: this.hand.length,
       capturedCount: this.captured.length,
-      escovas: this.escovas
+      escovas: this.escovas,
+      // Public: once captured, the 7 of diamonds is shown as a badge
+      hasSeteBelo: this.captured.some(c => c.isSeteBelo())
     }
   }
 }

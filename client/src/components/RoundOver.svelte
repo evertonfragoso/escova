@@ -18,14 +18,16 @@
 </script>
 
 <!-- 'close' fires for the button and for Escape alike, so onclose runs in one place -->
-<dialog bind:this={dialog} aria-labelledby="round-over-title" onclose={onclose}>
+<dialog bind:this={dialog} aria-labelledby="round-over-title" onclose={onclose} class="flex flex-col gap-3">
   <h2 id="round-over-title">{title}</h2>
   <p>Pontos da rodada: {TEAMS.map(t => `${t} ${summary.points[t]}`).join(' · ')}</p>
   <p>Placar: {TEAMS.map(t => `${t} ${summary.scores[t]}`).join(' · ')}</p>
-  <ul>
+  <ul class="list-disc pl-5 text-sm text-stone-600">
     {#each rows as row (row.label)}
       <li>{row.label}: {row.value}</li>
     {/each}
   </ul>
-  <button type="button" onclick={() => dialog.close()}>Continuar</button>
+  <div>
+    <button type="button" class="btn" onclick={() => dialog.close()}>Continuar</button>
+  </div>
 </dialog>

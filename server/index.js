@@ -6,7 +6,7 @@ import { Server } from 'socket.io'
 import RoomManager from './RoomManager.js'
 import { config } from './config.js'
 import {
-  EVENTS, createRoomSchema, joinRoomSchema, reconnectSchema, playSchema
+  EVENTS, createRoomSchema, joinRoomSchema, reconnectSchema, rematchSchema, playSchema
 } from '../shared/protocol.js'
 
 // Runs one handler: validates payload, calls fn, always answers the ack
@@ -75,6 +75,24 @@ export function createServer ({ rooms = new RoomManager() } = {}) {
       return { seatId, started: room.started }
     }))
 
+    socket.on(EVENTS.ROOM_REMATCH, handler(rematchSchema, ({ swapPartners }) => {
+      const { room, seatId } = session(socket)
+      room.requestRematch(seatId, swapPartners)
+      broadcastState(room)
+      return { started: room.started }
+    }))
+
+    socket.on(EVENTS.ROOM_LEAVE, handler(null, () => {
+      const { room, seatId } = session(socket)
+      room.leaveFinished(seatId)
+      socket.leave(room.id)
+      socket.data.roomId = null
+      socket.data.seatId = null
+      rooms.refresh(room)
+      broadcastState(room)
+      return {}
+    }))
+
     socket.on(EVENTS.GAME_PLAY, handler(playSchema, ({ cardId, tableCardIds }) => {
       const { room, seatId } = session(socket)
       const summary = room.play(seatId, cardId, tableCardIds)
@@ -91,7 +109,7 @@ export function createServer ({ rooms = new RoomManager() } = {}) {
       if (!seatId) return // stale socket: the seat already reconnected elsewhere
 
       // Lobby: the seat is freed. Started game: the seat is kept for reconnect.
-      if (!room.started) room.removeFromLobby(seatId)
+      if (!room.started) room.removePlayer(seatId)
       broadcastState(room)
       rooms.refresh(room)
     })

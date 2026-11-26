@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* Card sprite: the sheet has 13 columns and 4 rows, scaled to half size */
+:root {
+  --card_height: 315px;
+  --card_width: 225px;
+  --card_scale: .5;
+  --badge_height: 20px;
+}
+
+@layer base {
+  body {
+    @apply bg-stone-100 font-sans text-stone-900 antialiased;
+  }
+  h2 { @apply text-xl font-bold; }
+  h3 { @apply text-base font-semibold; }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary { @apply bg-emerald-700 hover:bg-emerald-600; }
+  .btn-danger { @apply bg-rose-700 hover:bg-rose-600; }
+
+  .muted { @apply text-sm text-stone-500; }
+  .error { @apply min-h-5 text-sm text-rose-700; }
+
+  /* The table and hand are felt-covered surfaces that the cards sit on */
+  .table-area,
+  .hand-area {
+    @apply flex min-h-40 flex-wrap items-center justify-center gap-1 rounded-2xl bg-emerald-800 p-4 shadow-inner;
+  }
+
+  .seats {
+    @apply m-0 flex list-none flex-wrap gap-2 p-0;
+  }
+  .seats li {
+    @apply flex flex-wrap items-center gap-1 rounded-full border border-stone-300 bg-white px-3 py-1 text-sm;
+  }
+  .seats li[aria-current="step"] {
+    @apply border-emerald-600 bg-emerald-50 ring-2 ring-emerald-500;
+  }
+  .seats li.offline { @apply opacity-50; }
+
+  .badge { @apply inline-flex items-center gap-1 pl-1; }
+  .badge > img { height: var(--badge_height); }
+
+  .sum { @apply font-mono text-2xl font-bold text-stone-500; }
+  .sum.ok { @apply text-emerald-600; }
+  .sum.bad { @apply text-rose-600; }
+
+  dialog {
+    @apply w-[90%] max-w-md rounded-2xl bg-white p-6 text-stone-900 shadow-xl;
+  }
+  dialog::backdrop {
+    @apply bg-black/60;
+  }
+
+  /* Card faces. Selectable cards are buttons, so they lose the button look here. */
+  .card {
+    @apply m-1 inline-block rounded-xl;
+    width: calc(var(--card_width) * var(--card_scale));
+    height: calc(var(--card_height) * var(--card_scale));
+    background-image: url('/images/cards_sheet.png');
+    background-size: calc(var(--card_width) * 13 * var(--card_scale)) calc(var(--card_height) * 4 * var(--card_scale));
+  }
+  button.card {
+    @apply cursor-pointer border-0 bg-transparent p-0 transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300;
+  }
+  .card.selected {
+    @apply ring-4 ring-amber-400;
+  }
+  .card:not(button) { @apply cursor-default; }
+}
+
+/* Sprite offsets: row by suit, column by rank */
+.card[data-suit="hearts"] { background-position-y: 0; }
+.card[data-suit="spades"] { background-position-y: calc(var(--card_height) * -1 * var(--card_scale)); }
+.card[data-suit="diamonds"] { background-position-y: calc(var(--card_height) * -2 * var(--card_scale)); }
+.card[data-suit="clubs"] { background-position-y: calc(var(--card_height) * -3 * var(--card_scale)); }
+
+.card[data-display-value="A"] { background-position-x: 0; }
+.card[data-display-value="2"] { background-position-x: calc(var(--card_width) * -1 * var(--card_scale)); }
+.card[data-display-value="3"] { background-position-x: calc(var(--card_width) * -2 * var(--card_scale)); }
+.card[data-display-value="4"] { background-position-x: calc(var(--card_width) * -3 * var(--card_scale)); }
+.card[data-display-value="5"] { background-position-x: calc(var(--card_width) * -4 * var(--card_scale)); }
+.card[data-display-value="6"] { background-position-x: calc(var(--card_width) * -5 * var(--card_scale)); }
+.card[data-display-value="7"] { background-position-x: calc(var(--card_width) * -6 * var(--card_scale)); }
+.card[data-display-value="J"] { background-position-x: calc(var(--card_width) * -10 * var(--card_scale)); }
+.card[data-display-value="Q"] { background-position-x: calc(var(--card_width) * -11 * var(--card_scale)); }
+.card[data-display-value="K"] { background-position-x: calc(var(--card_width) * -12 * var(--card_scale)); }

@@ -18,6 +18,10 @@ export const reconnectSchema = z.object({
   token: z.string().min(1)
 })
 
+export const rematchSchema = z.object({
+  swapPartners: z.boolean()
+})
+
 export const playSchema = z.object({
   cardId: z.string().min(1),
   tableCardIds: z.array(z.string().min(1)).max(DECK_SIZE).default([])

@@ -22,6 +22,16 @@ export function dismissRoundSummary () {
   roundSummary.set(null)
 }
 
+// Leaves a finished game: the server frees the seat, and this browser forgets it
+export async function leaveRoom () {
+  const res = await request(EVENTS.ROOM_LEAVE, {})
+  if (res.ok) {
+    session.clear()
+    roomState.set(null)
+  }
+  return res
+}
+
 // After a page load or a socket reconnect, take the same seat back if this browser had one
 async function resume () {
   const saved = session.get()

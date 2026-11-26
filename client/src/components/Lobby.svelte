@@ -23,34 +23,63 @@
     error = ''
     session.save(roomId.trim(), res.playerId)
   }
+
+  function submit (event) {
+    event.preventDefault()
+    join(code)
+  }
 </script>
 
 {#if view && !view.started}
-  <section class="panel">
-    <h2>Aguardando jogadores</h2>
-    <p>Código da sala: <strong>{view.roomId}</strong></p>
+  <section class="panel flex flex-col gap-3" aria-labelledby="waiting-title">
+    <h2 id="waiting-title">Aguardando jogadores</h2>
+    <p>Código da sala: <strong class="font-mono text-lg">{view.roomId}</strong></p>
     <p class="muted">{view.players.length} de {view.capacity}. O jogo começa sozinho quando a sala encher.</p>
-    <ul class="seats">
+    <ol class="seats" aria-label="Jogadores na sala">
       {#each view.players as p (p.id)}
-        <li class:turn={p.id === view.you}>{p.name}</li>
+        <li aria-current={p.id === view.you ? 'true' : undefined}>{p.name}</li>
       {/each}
-    </ul>
+    </ol>
   </section>
 {:else}
-  <section class="panel">
-    <h2>Escova online</h2>
-    <div class="row">
-      {#each PLAYER_COUNTS as n (n)}
-        <button type="button" onclick={() => create(n)} disabled={!name.trim()}>
-          Nova sala ({n} jogadores)
-        </button>
-      {/each}
-    </div>
-    <div class="row" style="margin-top: 1rem">
-      <input type="text" placeholder="Seu nome" maxlength="20" bind:value={name} />
-      <input type="text" placeholder="Código da sala" bind:value={code} />
-      <button type="button" onclick={() => join(code)} disabled={!name.trim() || !code.trim()}>Entrar</button>
-    </div>
-    <p class="error">{error}</p>
+  <section class="panel flex flex-col gap-5" aria-labelledby="lobby-title">
+    <h2 id="lobby-title">Jogar</h2>
+
+    <fieldset class="flex flex-col gap-2">
+      <legend class="muted mb-2">Nova sala</legend>
+      <div class="flex flex-wrap gap-2">
+        {#each PLAYER_COUNTS as n (n)}
+          <button type="button" class="btn btn-primary" onclick={() => create(n)} disabled={!name.trim()}>
+            Nova sala ({n} jogadores)
+          </button>
+        {/each}
+      </div>
+    </fieldset>
+
+    <form class="flex flex-wrap items-end gap-3" onsubmit={submit}>
+      <label class="flex flex-col gap-1 text-sm font-medium">
+        Seu nome
+        <input
+          type="text"
+          placeholder="Seu nome"
+          maxlength="20"
+          autocomplete="nickname"
+          class="rounded-xl border border-stone-300 px-3 py-2 text-base focus:border-emerald-600 focus:outline-none"
+          bind:value={name}
+        />
+      </label>
+      <label class="flex flex-col gap-1 text-sm font-medium">
+        Código da sala
+        <input
+          type="text"
+          placeholder="Código da sala"
+          class="rounded-xl border border-stone-300 px-3 py-2 text-base focus:border-emerald-600 focus:outline-none"
+          bind:value={code}
+        />
+      </label>
+      <button type="submit" class="btn" disabled={!name.trim() || !code.trim()}>Entrar</button>
+    </form>
+
+    <p class="error" role="alert">{error}</p>
   </section>
 {/if}

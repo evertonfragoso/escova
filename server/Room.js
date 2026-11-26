@@ -14,6 +14,7 @@ export default class Room {
     this.nextSeat = 1
     this.tokens = new Map() // secret token -> seat id
     this.sockets = new Map() // seat id -> live socket id (absent = disconnected)
+    this.rematchVotes = new Map() // seat id -> wants to swap partners, once the game is over
   }
 
   get isFull () {
@@ -67,12 +68,47 @@ export default class Room {
     return this.sockets.get(seatId)
   }
 
-  // Lobby only: a player who leaves frees the seat and their token
-  removeFromLobby (seatId) {
+  // Removes a seat and its token. Used for lobby leaves and for leaving a finished game.
+  removePlayer (seatId) {
     this.players = this.players.filter(p => p.id !== seatId)
     for (const [token, seat] of this.tokens) {
       if (seat === seatId) this.tokens.delete(token)
     }
+    this.sockets.delete(seatId)
+  }
+
+  // After the game is over, a player can go home. The room goes back to the lobby.
+  leaveFinished (seatId) {
+    if (!this.game?.isOver) throw new Error('Can only leave a finished game')
+    this.removePlayer(seatId)
+    this.game = null
+    this.rematchVotes = new Map()
+  }
+
+  // Each seat votes to play again. When every seat has voted, the game restarts.
+  // Partners swap only when all seats vote to swap, and only in a 4-player room.
+  requestRematch (seatId, swapPartners) {
+    if (!this.game?.isOver) throw new Error('Game is not over')
+    if (!this.players.some(p => p.id === seatId)) throw new Error('Not seated in this room')
+
+    this.rematchVotes.set(seatId, swapPartners)
+    const everyoneVoted = this.players.length === this.capacity &&
+      this.players.every(p => this.rematchVotes.has(p.id))
+    if (everyoneVoted) {
+      const swap = this.capacity === 4 && [...this.rematchVotes.values()].every(Boolean)
+      this._restart(swap)
+    }
+  }
+
+  // Seat order decides teams (1 and 3 vs 2 and 4). Swapping [1,2,3,4] to [1,3,2,4]
+  // puts 1 and 2 together, so everyone gets a new partner.
+  _restart (swap) {
+    if (swap) {
+      const [a, b, c, d] = this.players
+      this.players = [a, c, b, d]
+    }
+    this.rematchVotes = new Map()
+    this._start()
   }
 
   _start () {
@@ -108,6 +144,8 @@ export default class Room {
       ...base,
       scores: this.game.scores,
       winner: this.game.winner,
+      history: this.game.history,
+      rematch: { votes: Object.fromEntries(this.rematchVotes), capacity: this.capacity },
       round: this.game.round.viewFor(seatId)
     }
   }
